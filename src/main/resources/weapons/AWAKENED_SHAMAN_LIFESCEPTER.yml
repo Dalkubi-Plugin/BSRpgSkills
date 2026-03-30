@@ -4,7 +4,7 @@
 # ========================================
 
 # MMOItems 타입
-mmo-type: STICK
+mmo-type: SWORD
 
 display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
 
