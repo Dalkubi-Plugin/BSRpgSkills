@@ -1,0 +1,70 @@
+display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
+
+skills:
+  slot-1:
+    mythic-id: PRIMAL_COMBO
+    display-name: "<yellow>원초 콤보</yellow>"
+    cooldown: 0.3
+    damage: 3
+    icon: STICK
+    description: "좌클릭으로 타격합니다."
+    enabled: true
+    extra:
+      heal: 3
+
+  slot-2:
+    mythic-id: ECHO_STEP
+    display-name: "<aqua>메아리 발걸음</aqua>"
+    cooldown: 2
+    damage: 0
+    icon: FEATHER
+    description: "잔상을 남기며 이동합니다."
+    enabled: true
+
+  slot-3:
+    mythic-id: RITUAL_TOTEM
+    display-name: "<gold>제의 토템</gold>"
+    cooldown: 3
+    damage: 3
+    icon: OAK_FENCE
+    description: "토템을 소환합니다."
+    enabled: true
+    extra:
+      heal: 3
+
+  slot-4:
+    mythic-id: EARTHEN_EMBRACE
+    display-name: "<dark_green>대지의 포옹</dark_green>"
+    cooldown: 3
+    damage: 0
+    icon: DIRT
+    description: "대지의 방어막을 펼칩니다."
+    enabled: true
+
+  slot-5:
+    mythic-id: ANCESTRAL_HANDS
+    display-name: "<dark_red>선조의 손길</dark_red>"
+    cooldown: 7
+    damage: 7
+    icon: WITHER_SKELETON_SKULL
+    description: "선조의 힘을 불러냅니다."
+    enabled: true
+    extra:
+      heal: 2
+
+  slot-6:
+    mythic-id: STANCE_SWITCH
+    display-name: "<light_purple>태세 전환</light_purple>"
+    cooldown: 2
+    damage: 0
+    icon: CLOCK
+    description: "태세를 전환합니다."
+    enabled: true
+
+passives:
+  passive1:
+    type: SOUL_LINK
+    timer: 2
+    cooldown: 0
+    heal: 2
+    healinterval: 1
