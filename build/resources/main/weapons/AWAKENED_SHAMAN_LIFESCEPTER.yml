@@ -1,82 +1,83 @@
+# ========================================
+#  AWAKENED_SHAMAN_LIFESCEPTER
+#  파일명 = MMOITEMS_ITEM_ID
+# ========================================
+
+# MMOItems 타입
 mmo-type: SWORD
+
 display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
 
+# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: PRIMAL_COMBO
-    display-name: "<yellow>원초 콤보</yellow>"
+    display-name: "<gradient:#fff9ae:#f8e246>원초의 연격</gradient>"
     cooldown: 0.3
     damage: 3
     icon: STICK
     custom-model-data: 0
-    description: "좌클릭으로 타격합니다."
+    description: "태세에 따라 뇌전의 연격이나 치유의 광선을 발사합니다. 4타 시전 시 조준한 위치에 강력한 속성의 낙뢰를 소환합니다."
     enabled: true
-    extra:
-      heal: 3
 
   slot-2:
     mythic-id: ECHO_STEP
-    display-name: "<aqua>메아리 발걸음</aqua>"
+    display-name: "<gradient:#b5eeff:#4facfe>메아리의 발걸음</gradient>"
     cooldown: 2
     damage: 0
     icon: FEATHER
     custom-model-data: 0
-    description: "잔상을 남기며 이동합니다."
+    description: "순간적으로 영체 상태가 되어 이동 방향으로 신속하게 돌진합니다. 영체화된 동안에는 모든 피해로부터 면역이 됩니다."
     enabled: true
 
   slot-3:
     mythic-id: RITUAL_TOTEM
-    display-name: "<gold>제의 토템</gold>"
+    display-name: "<gradient:#ffcc33:#ffb347>선조의 제의 토템</gradient>"
     cooldown: 3
     damage: 3
     icon: OAK_FENCE
     custom-model-data: 0
-    description: "토템을 소환합니다."
+    description: "적을 추적하는 영령을 뿜는 사냥꾼 토템이나, 적의 진입을 차단하고 아군을 치유하는 수호자 토템을 소환합니다."
     enabled: true
-    extra:
-      heal: 3
 
   slot-4:
     mythic-id: EARTHEN_EMBRACE
-    display-name: "<dark_green>대지의 포옹</dark_green>"
+    display-name: "<gradient:#91f48f:#38a333>대지의 포옹</gradient>"
     cooldown: 3
     damage: 0
     icon: DIRT
     custom-model-data: 0
-    description: "대지의 방어막을 펼칩니다."
+    description: "전방의 냉기 오라를 흡수하여 적들을 끌어당깁니다. 이후 지면에서 거대한 얼음 가시들을 솟구치게 하여 적을 둔화시킵니다."
     enabled: true
 
   slot-5:
     mythic-id: ANCESTRAL_HANDS
-    display-name: "<dark_red>선조의 손길</dark_red>"
+    display-name: "<gradient:#ff7e5f:#feb47b>선조의 손길</gradient>"
     cooldown: 7
     damage: 7
     icon: WITHER_SKELETON_SKULL
     custom-model-data: 0
-    description: "선조의 힘을 불러냅니다."
+    description: "거대한 영혼의 손을 소환하여 적을 기절시키거나, 아군을 들어 올려 모든 피해로부터 보호하고 지속적으로 치유합니다."
     enabled: true
-    extra:
-      heal: 2
 
   slot-6:
     mythic-id: STANCE_SWITCH
-    display-name: "<light_purple>태세 전환</light_purple>"
+    display-name: "<gradient:#da22ff:#9733ee>영혼의 태세 전환</gradient>"
     cooldown: 2
     damage: 0
     icon: CLOCK
     custom-model-data: 0
-    description: "태세를 전환합니다."
+    description: "지면에 거대한 얼음 수정을 생성하여 적을 빙결시키고 태세를 전환합니다. 수정이 파괴될 때 주변에 치명적인 추가 피해를 입힙니다."
     enabled: true
 
+# ── 패시브 (SOUL_LINK) ──
 passives:
   passive1:
     type: SOUL_LINK
-    display-name: "<green>영혼 연결</green>"
+    display-name: "<gradient:#ffffff:#e1ff8f>영혼의 결속</gradient>"
     timer: 2
     cooldown: 0
-    icon: TOTEM_OF_UNDYING
+    icon: ENDER_EYE
     custom-model-data: 0
-    description: "주변 아군을 주기적으로 회복합니다."
+    description: "가까운 아군과 영적 선으로 연결됩니다. 태세에 따라 연결된 아군의 공격력을 강화하거나 생명력을 지속적으로 회복시킵니다."
     enabled: true
-    heal: 2
-    healinterval: 1
