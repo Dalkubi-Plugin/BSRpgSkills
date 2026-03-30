@@ -1,10 +1,14 @@
 # ========================================
 #  AWAKENED_MARTIAL_LIFESCEPTER
+#  파일명 = MMOITEMS_ITEM_ID
 # ========================================
+
+# MMOItems 타입 (GUI에서 실제 아이템 렌더링에 사용)
 mmo-type: SWORD
 
-display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
+display-name: "<#e1ff8f>맹호의 권갑"
 
+# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: MARTIAL_COMBO
@@ -66,6 +70,7 @@ skills:
     description: "비룡의 환영과 함께 난무를 펼친 뒤, 두 마리의 영적 비룡을 소환하여 지면을 강력하게 타격하고 주변의 적을 궤멸시킵니다."
     enabled: true
 
+# ── 패시브 (AGILE_STRIKER) ──
 passives:
   passive1:
     type: AGILE_STRIKER

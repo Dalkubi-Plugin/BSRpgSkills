@@ -6,7 +6,7 @@
 # MMOItems 타입
 mmo-type: SWORD
 
-display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
+display-name: "<#e1ff8f>생명의 성령주각"
 
 # ── 액티브 스킬 (6슬롯) ──
 skills:

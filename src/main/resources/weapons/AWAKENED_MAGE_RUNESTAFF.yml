@@ -1,10 +1,14 @@
 # ========================================
-#  AWAKENED_SORCERER_LIFESCEPTER
+#  AWAKENED_MARTIAL_ARTIST_TIGERFIST
+#  파일명 = MMOITEMS_ITEM_ID
 # ========================================
+
+# MMOItems 타입 (GUI에서 실제 아이템 렌더링에 사용)
 mmo-type: SWORD
 
-display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
+display-name: "<#e1ff8f>비전의 룬 지팡이"
 
+# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: SORCERY_COMBO
@@ -66,6 +70,7 @@ skills:
     description: "공중으로 부상하여 거대한 파멸의 유성을 소환합니다. 유성이 지면에 충돌하면 십자 형태의 거대한 지면 균열과 함께 모든 것을 불태워 버립니다."
     enabled: true
 
+# ── 패시브 (MANA_BARRIER) ──
 passives:
   passive1:
     type: MANA_BARRIER

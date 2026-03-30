@@ -6,7 +6,7 @@
 # MMOItems 타입 (GUI에서 실제 아이템 렌더링에 사용)
 mmo-type: SWORD
 
-display-name: "<gradient:#00ff2a:#e1ff75:#00ff2a>Galebow</gradient>"
+display-name: "<#00ff2a>질풍노도의 활"
 
 # ── 액티브 스킬 (6슬롯) ──
 skills:

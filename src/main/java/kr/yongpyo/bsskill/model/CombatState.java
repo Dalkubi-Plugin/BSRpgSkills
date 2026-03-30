@@ -5,14 +5,22 @@ import java.util.*;
 
 /**
  * 플레이어 전투 모드 상태 추적
- * 슬롯 이동 제한 없음 — 무기 위치만 추적
+ * 전투 모드 진입 시 무기를 핫바 8(키보드 9)으로 이동, 해제 시 원래 위치로 복구
  */
 public class CombatState {
 
     private final UUID playerUuid;
     private boolean combatMode;
     private String currentWeaponId;
+
+    /** 무기가 위치한 핫바 슬롯 (전투 모드 중 항상 8) */
     private int weaponSlot = -1;
+
+    /** 전투 진입 전 무기가 있던 핫바 슬롯 (복구용) */
+    private int originalSlot = -1;
+
+    /** 슬롯 스왑이 실행되었는지 여부 */
+    private boolean swapped = false;
 
     private final Map<Integer, Long> cooldowns = new HashMap<>();
     private final List<BukkitTask> timerTasks = new ArrayList<>();
@@ -45,6 +53,7 @@ public class CombatState {
     // -- 무기 슬롯 --
     public boolean isHoldingWeapon(int heldSlot) { return weaponSlot >= 0 && heldSlot == weaponSlot; }
 
+    /** 전투 모드 해제 시 전체 초기화 (인벤토리 복구는 CombatManager에서 처리) */
     public void reset() {
         combatMode = false;
         currentWeaponId = null;
@@ -61,4 +70,8 @@ public class CombatState {
     public void setCurrentWeaponId(String v) { currentWeaponId = v; }
     public int getWeaponSlot() { return weaponSlot; }
     public void setWeaponSlot(int v) { weaponSlot = v; }
+    public int getOriginalSlot() { return originalSlot; }
+    public void setOriginalSlot(int v) { originalSlot = v; }
+    public boolean isSwapped() { return swapped; }
+    public void setSwapped(boolean v) { swapped = v; }
 }
