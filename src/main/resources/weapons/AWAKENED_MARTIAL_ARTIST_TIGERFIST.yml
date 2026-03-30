@@ -1,0 +1,78 @@
+# ========================================
+#  AWAKENED_MARTIAL_LIFESCEPTER
+# ========================================
+mmo-type: SWORD
+
+display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
+
+skills:
+  slot-1:
+    mythic-id: MARTIAL_COMBO
+    display-name: "<gradient:#fff9ae:#f8e246>원초의 권격</gradient>"
+    cooldown: 0.3
+    damage: 3
+    icon: STICK
+    custom-model-data: 0
+    description: "좌우 연격과 승룡권으로 이어지는 연속 타격을 가합니다. 4타 시전 시 기를 모아 돌진하며 적을 타격하고 짧은 시간 기절시킵니다."
+    enabled: true
+
+  slot-2:
+    mythic-id: GROUND_BLOW
+    display-name: "<gradient:#b5eeff:#4facfe>지면의 강타</gradient>"
+    cooldown: 2
+    damage: 0
+    icon: FEATHER
+    custom-model-data: 0
+    description: "전방으로 질주하며 모든 적을 붙잡습니다. 질주 끝에 도약하여 붙잡은 적들을 지면에 내리쳐 강력한 기절 효과를 부여합니다."
+    enabled: true
+
+  slot-3:
+    mythic-id: MULTISTRIKE_UPPERCUT
+    display-name: "<gradient:#ffcc33:#ffb347>선조의 승룡권</gradient>"
+    cooldown: 3
+    damage: 3
+    icon: OAK_FENCE
+    custom-model-data: 0
+    description: "전방을 향해 5회 연속으로 타격한 후, 공중으로 높이 뛰어오르는 승룡권을 시전하여 적을 공중에 띄워 올립니다."
+    enabled: true
+
+  slot-4:
+    mythic-id: HEAVY_SHOCKWAVE
+    display-name: "<gradient:#91f48f:#38a333>중력의 충격파</gradient>"
+    cooldown: 3
+    damage: 0
+    icon: DIRT
+    custom-model-data: 0
+    description: "강력한 정권 찌르기로 적을 밀쳐낸 뒤, 대기의 에너지를 모아 방출하는 거대한 충격파로 적을 밀어내고 기절시킵니다."
+    enabled: true
+
+  slot-5:
+    mythic-id: SPINNING_BLOW
+    display-name: "<gradient:#ff7e5f:#feb47b>회전의 일격</gradient>"
+    cooldown: 7
+    damage: 7
+    icon: IRON_AXE
+    custom-model-data: 0
+    description: "지상에서는 적을 띄우고, 공중에서는 적을 지면으로 찍어 누르는 강력한 회전 발차기를 시전합니다."
+    enabled: true
+
+  slot-6:
+    mythic-id: DRAGON_STRIKE
+    display-name: "<gradient:#da22ff:#9733ee>비룡의 태세</gradient>"
+    cooldown: 2
+    damage: 0
+    icon: CLOCK
+    custom-model-data: 0
+    description: "비룡의 환영과 함께 난무를 펼친 뒤, 두 마리의 영적 비룡을 소환하여 지면을 강력하게 타격하고 주변의 적을 궤멸시킵니다."
+    enabled: true
+
+passives:
+  passive1:
+    type: AGILE_STRIKER
+    display-name: "<gradient:#ffffff:#e1ff8f>신속의 타격가</gradient>"
+    timer: 1
+    cooldown: 0
+    icon: ENDER_EYE
+    custom-model-data: 0
+    description: "질주 중 몸을 숙여 전방으로 신속하고 길게 대시하는 기술을 상시 사용할 수 있게 됩니다."
+    enabled: true
