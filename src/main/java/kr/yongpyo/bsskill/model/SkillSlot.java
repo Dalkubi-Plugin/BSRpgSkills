@@ -1,20 +1,10 @@
 package kr.yongpyo.bsskill.model;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * 액티브 스킬 슬롯 (1~6) 데이터 모델
- * <pre>
- *   슬롯 1 → 좌클릭     슬롯 2 → 우클릭
- *   슬롯 3 → 1키        슬롯 4 → 2키
- *   슬롯 5 → 3키        슬롯 6 → 4키
- * </pre>
- * <p>
- * MythicLib API: {@code ModifiableSkill.registerModifier(key, double)}로
- * damage + extra 파라미터를 등록하며, MythicMobs YML에서 {@code <modifier.key>}로 참조.
- * </p>
+ * 슬롯 1: 좌클릭, 슬롯 2: 우클릭, 슬롯 3~6: 핫바 1~4키
  */
 public class SkillSlot {
 
@@ -28,10 +18,9 @@ public class SkillSlot {
     private double cooldown = 0.0;
     private double damage = 0.0;
     private String icon = "BARRIER";
+    private int customModelData = 0;
     private String description = "";
     private boolean enabled = false;
-
-    /** MythicLib registerModifier에 전달할 추가 변수 (heal, burndamage 등) */
     private final Map<String, Object> extraParams = new LinkedHashMap<>();
 
     public SkillSlot(int slot) { this.slot = slot; }
@@ -39,7 +28,6 @@ public class SkillSlot {
     public boolean isValid() { return enabled && mythicId != null && !mythicId.isBlank(); }
     public String getKeybindLabel() { return (slot >= 1 && slot <= 6) ? KEYBIND_LABELS[slot] : "?"; }
 
-    // Getters & Setters
     public int getSlot() { return slot; }
     public String getMythicId() { return mythicId; }
     public void setMythicId(String v) { this.mythicId = v; }
@@ -51,11 +39,13 @@ public class SkillSlot {
     public void setDamage(double v) { this.damage = Math.max(0, v); }
     public String getIcon() { return icon; }
     public void setIcon(String v) { this.icon = v; }
+    public int getCustomModelData() { return customModelData; }
+    public void setCustomModelData(int v) { this.customModelData = v; }
     public String getDescription() { return description; }
     public void setDescription(String v) { this.description = v; }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean v) { this.enabled = v; }
     public Map<String, Object> getExtraParams() { return Collections.unmodifiableMap(extraParams); }
-    public void putExtra(String key, Object value) { extraParams.put(key, value); }
+    public void putExtra(String k, Object v) { extraParams.put(k, v); }
     public void clearExtras() { extraParams.clear(); }
 }

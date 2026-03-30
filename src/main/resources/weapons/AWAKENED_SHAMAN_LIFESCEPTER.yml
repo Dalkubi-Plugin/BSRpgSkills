@@ -1,3 +1,4 @@
+mmo-type: SWORD
 display-name: "<gradient:#e1ff8f:#b5eeff:#e1ff8f>Lifescepter</gradient>"
 
 skills:
@@ -7,6 +8,7 @@ skills:
     cooldown: 0.3
     damage: 3
     icon: STICK
+    custom-model-data: 0
     description: "좌클릭으로 타격합니다."
     enabled: true
     extra:
@@ -18,6 +20,7 @@ skills:
     cooldown: 2
     damage: 0
     icon: FEATHER
+    custom-model-data: 0
     description: "잔상을 남기며 이동합니다."
     enabled: true
 
@@ -27,6 +30,7 @@ skills:
     cooldown: 3
     damage: 3
     icon: OAK_FENCE
+    custom-model-data: 0
     description: "토템을 소환합니다."
     enabled: true
     extra:
@@ -38,6 +42,7 @@ skills:
     cooldown: 3
     damage: 0
     icon: DIRT
+    custom-model-data: 0
     description: "대지의 방어막을 펼칩니다."
     enabled: true
 
@@ -47,6 +52,7 @@ skills:
     cooldown: 7
     damage: 7
     icon: WITHER_SKELETON_SKULL
+    custom-model-data: 0
     description: "선조의 힘을 불러냅니다."
     enabled: true
     extra:
@@ -58,13 +64,19 @@ skills:
     cooldown: 2
     damage: 0
     icon: CLOCK
+    custom-model-data: 0
     description: "태세를 전환합니다."
     enabled: true
 
 passives:
   passive1:
     type: SOUL_LINK
+    display-name: "<green>영혼 연결</green>"
     timer: 2
     cooldown: 0
+    icon: TOTEM_OF_UNDYING
+    custom-model-data: 0
+    description: "주변 아군을 주기적으로 회복합니다."
+    enabled: true
     heal: 2
     healinterval: 1

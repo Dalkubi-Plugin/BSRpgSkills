@@ -1,29 +1,22 @@
-# ========================================
-#  BSSkill v3.1.0 Configuration
-# ========================================
+# BSSkill v4.0.0 Configuration
 
-# ActionBar HUD On/Off
 use-actionbar: true
 actionbar-interval: 5
 
-# 사운드 (Minecraft 리소스 키)
 sounds:
   combat-on: entity.ender_dragon.growl
   combat-off: block.note_block.bass
-  skill-cast: entity.player.attack.sweep
+  skill-cast: ""
   cooldown-deny: block.note_block.hat
   return-weapon: block.note_block.pling
 
-# 메시지 (MiniMessage 포맷)
-# 빈 문자열("")이면 해당 메시지를 보내지 않음
-# {weapon} — 무기 이름, {skill} — 스킬 이름, {remaining} — 남은 쿨타임
 messages:
-  combat-on: "<gradient:red:gold>⚔ 전투 모드 활성화!</gradient> <yellow>{weapon}</yellow>"
-  combat-off: "<gradient:gray:dark_gray>⚔ 전투 모드를 해제했습니다.</gradient>"
-  no-weapon: "<red>✖ 등록된 무기를 손에 들고 있어야 합니다.</red>"
-  weapon-lost: "<red>⚔ 무기가 사라져 전투 모드가 해제되었습니다.</red>"
-  cooldown: "<red>⏳ 쿨타임 (<white>{remaining}초</white>)</red>"
+  combat-on: "<gradient:red:gold>전투 모드 ON</gradient> <yellow>{weapon}</yellow>"
+  combat-off: "<gradient:gray:dark_gray>전투 모드 OFF</gradient>"
+  no-weapon: "<red>등록된 무기를 손에 들고 있어야 합니다.</red>"
+  weapon-lost: "<red>무기가 사라져 전투 모드가 해제되었습니다.</red>"
+  cooldown: "<red>쿨타임 {remaining}초</red>"
   skill-cast: ""
   no-skill: "<gray>해당 슬롯에 스킬이 없습니다.</gray>"
-  cast-failed: "<red>✖ 스킬 시전 실패</red>"
-  return-weapon: "<yellow>⚔ 무기로 복귀</yellow>"
+  cast-failed: "<red>스킬 시전 실패</red>"
+  return-weapon: "<yellow>무기로 복귀</yellow>"

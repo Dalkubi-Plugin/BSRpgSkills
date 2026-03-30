@@ -1,16 +1,11 @@
-# ========================================
-#  AWAKENED_ARCHER_GALEBOW
-#  파일명 = MMOITEMS_ITEM_ID (자동 매칭)
-# ========================================
-# 슬롯 키 매핑:
-#   slot-1: 좌클릭  |  slot-2: 우클릭
-#   slot-3: 1키     |  slot-4: 2키
-#   slot-5: 3키     |  slot-6: 4키
-# 무기: 항상 핫바 9번(키보드 9)에 고정
+# AWAKENED_ARCHER_GALEBOW
+# 파일명 = MMOITEMS_ITEM_ID
+
+# MMOItems 타입 (GUI에서 실제 아이템 렌더링에 사용)
+mmo-type: SWORD
 
 display-name: "<gradient:#00ff2a:#e1ff75:#00ff2a>Galebow</gradient>"
 
-# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: BLASTING_COMBO
@@ -18,6 +13,7 @@ skills:
     cooldown: 0.3
     damage: 5
     icon: BLAZE_POWDER
+    custom-model-data: 0
     description: "좌클릭으로 폭발 콤보를 시전합니다."
     enabled: true
 
@@ -27,6 +23,7 @@ skills:
     cooldown: 2
     damage: 5
     icon: SPECTRAL_ARROW
+    custom-model-data: 0
     description: "후방으로 도약하며 화살을 발사합니다."
     enabled: true
 
@@ -36,6 +33,7 @@ skills:
     cooldown: 3
     damage: 5
     icon: ARROW
+    custom-model-data: 0
     description: "전방에 화살 비를 퍼붓습니다."
     enabled: true
 
@@ -45,6 +43,7 @@ skills:
     cooldown: 3
     damage: 5
     icon: BOW
+    custom-model-data: 0
     description: "빠르게 연사합니다."
     enabled: true
 
@@ -54,6 +53,7 @@ skills:
     cooldown: 7
     damage: 40
     icon: TNT
+    custom-model-data: 0
     description: "초강력 일격을 날립니다."
     enabled: true
 
@@ -63,14 +63,17 @@ skills:
     cooldown: 3
     damage: 6
     icon: TRIDENT
+    custom-model-data: 0
     description: "하늘에서 관통 화살이 쏟아집니다."
     enabled: true
 
-# ── 패시브 (TIMER 자동 발동) ──
-# 전투 모드 + 무기를 들고 있을 때 timer 주기마다 자동 시전
-# 모든 키값이 registerModifier로 MythicMobs에 전달됨
 passives:
   passive1:
     type: AMBUSH
+    display-name: "<green>매복</green>"
     timer: 10
     cooldown: 0
+    icon: ENDER_EYE
+    custom-model-data: 0
+    description: "주기적으로 은신 상태에 진입합니다."
+    enabled: true

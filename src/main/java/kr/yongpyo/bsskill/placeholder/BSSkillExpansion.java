@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class BSSkillExpansion extends PlaceholderExpansion {
-
     private final BSSkill plugin;
     public BSSkillExpansion(BSSkill plugin) { this.plugin = plugin; }
 
@@ -43,10 +42,7 @@ public class BSSkillExpansion extends PlaceholderExpansion {
         if (slot < 1 || slot > WeaponSkill.MAX_SLOTS) return "";
 
         WeaponSkill w = plugin.getCombatManager().getCurrentWeapon(player);
-        if (w == null) {
-            String id = plugin.getCombatManager().detectWeaponId(player);
-            if (id != null) w = plugin.getWeaponSkillManager().getWeapon(id);
-        }
+        if (w == null) { String id = plugin.getCombatManager().detectWeaponId(player); if (id != null) w = plugin.getWeaponSkillManager().getWeapon(id); }
         if (w == null) return "";
         SkillSlot s = w.getSkill(slot);
         if (s == null) return "";

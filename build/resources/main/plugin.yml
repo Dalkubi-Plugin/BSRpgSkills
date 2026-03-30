@@ -1,14 +1,8 @@
 name: BSSkill
-version: '3.1.0'
+version: '4.0.0'
 main: kr.yongpyo.bsskill.BSSkill
 api-version: '1.21'
-description: 'MMOItems 무기 기반 6슬롯 스킬 + 패시브 시스템'
+description: 'MMOItems 무기 기반 6슬롯 스킬 + 패시브 시스템 v4'
 author: yongpyo
-depend:
-  - CommandAPI
-  - MythicMobs
-  - MMOItems
-  - MythicLib
-softdepend:
-  - PlaceholderAPI
-  - MMOCore
+depend: [CommandAPI, MythicMobs, MMOItems, MythicLib]
+softdepend: [PlaceholderAPI, MMOCore]

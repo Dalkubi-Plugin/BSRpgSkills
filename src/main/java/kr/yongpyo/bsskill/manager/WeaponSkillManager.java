@@ -1,9 +1,7 @@
 package kr.yongpyo.bsskill.manager;
 
 import kr.yongpyo.bsskill.BSSkill;
-import kr.yongpyo.bsskill.model.PassiveSlot;
-import kr.yongpyo.bsskill.model.SkillSlot;
-import kr.yongpyo.bsskill.model.WeaponSkill;
+import kr.yongpyo.bsskill.model.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -14,12 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
 /**
- * 무기 스킬 데이터 매니저
- * <p>
- * {@code plugins/BSSkill/weapons/{MMOITEMS_ITEM_ID}.yml} 파일을 파싱하여
- * {@link WeaponSkill} 객체로 캐싱한다. 로드 시 각 스킬/패시브의 유효성을 검증하고
- * 상세 로그를 콘솔에 출력한다.
- * </p>
+ * 무기 스킬 데이터 매니저 — YAML 파싱, 캐싱, 저장, 검증 로그
  */
 public class WeaponSkillManager {
 
@@ -27,8 +20,7 @@ public class WeaponSkillManager {
     private final File weaponsFolder;
     private final Map<String, WeaponSkill> cache = new ConcurrentHashMap<>();
 
-    /** jar 내장 기본 무기 파일 */
-    private static final String[] DEFAULT_WEAPONS = {
+    private static final String[] DEFAULTS = {
             "AWAKENED_ARCHER_GALEBOW.yml",
             "AWAKENED_SHAMAN_LIFESCEPTER.yml"
     };
@@ -45,154 +37,108 @@ public class WeaponSkillManager {
     public void loadAll() {
         cache.clear();
         if (!weaponsFolder.exists()) weaponsFolder.mkdirs();
-        extractDefaults();
-
-        File[] files = weaponsFolder.listFiles((d, n) -> n.endsWith(".yml"));
-        if (files == null || files.length == 0) {
-            plugin.getLogger().info("[WeaponSkillManager] weapons 폴더에 파일 없음");
-            return;
+        for (String n : DEFAULTS) {
+            if (!new File(weaponsFolder, n).exists()) plugin.saveResource("weapons/" + n, false);
         }
 
+        File[] files = weaponsFolder.listFiles((d, n) -> n.endsWith(".yml"));
+        if (files == null || files.length == 0) { plugin.getLogger().info("[WeaponSkillManager] 파일 없음"); return; }
+
         int loaded = 0;
-        for (File file : files) {
+        for (File f : files) {
             try {
-                WeaponSkill weapon = parseFile(file);
-                if (weapon != null) {
-                    cache.put(weapon.getWeaponId(), weapon);
-                    loaded++;
-                    logValidation(weapon); // 검증 로그 출력
-                }
-            } catch (Exception e) {
-                plugin.getLogger().log(Level.WARNING, "[WeaponSkillManager] 로드 실패: " + file.getName(), e);
-            }
+                WeaponSkill w = parseFile(f);
+                if (w != null) { cache.put(w.getWeaponId(), w); loaded++; logValidation(w); }
+            } catch (Exception e) { plugin.getLogger().log(Level.WARNING, "로드 실패: " + f.getName(), e); }
         }
         plugin.getLogger().info("[WeaponSkillManager] " + loaded + "개 무기 로드 완료");
     }
 
-    private void extractDefaults() {
-        for (String name : DEFAULT_WEAPONS) {
-            if (!new File(weaponsFolder, name).exists()) {
-                plugin.saveResource("weapons/" + name, false);
-            }
-        }
-    }
-
-    // ===================================================================
-    // 파싱
-    // ===================================================================
-
     private WeaponSkill parseFile(File file) {
-        String weaponId = file.getName().replace(".yml", "");
-        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        String id = file.getName().replace(".yml", "");
+        YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 
-        WeaponSkill weapon = new WeaponSkill(weaponId);
-        weapon.setDisplayName(config.getString("display-name", weaponId));
+        WeaponSkill w = new WeaponSkill(id);
+        w.setMmoType(cfg.getString("mmo-type", "SWORD"));
+        w.setDisplayName(cfg.getString("display-name", id));
 
-        // ── 액티브 스킬 파싱 ──
-        ConfigurationSection skillsSec = config.getConfigurationSection("skills");
-        if (skillsSec != null) {
+        // -- 액티브 --
+        ConfigurationSection skills = cfg.getConfigurationSection("skills");
+        if (skills != null) {
             for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
-                ConfigurationSection slotSec = skillsSec.getConfigurationSection("slot-" + i);
-                if (slotSec == null) continue;
-
-                SkillSlot slot = weapon.getSkill(i);
-                slot.setMythicId(slotSec.getString("mythic-id", ""));
-                slot.setDisplayName(slotSec.getString("display-name", "<gray>비어있음</gray>"));
-                slot.setCooldown(slotSec.getDouble("cooldown", 0));
-                slot.setDamage(slotSec.getDouble("damage", 0));
-                slot.setIcon(slotSec.getString("icon", "BARRIER"));
-                slot.setDescription(slotSec.getString("description", ""));
-                slot.setEnabled(slotSec.getBoolean("enabled", false));
-
-                // extra 섹션 → 커스텀 모디파이어
-                ConfigurationSection extraSec = slotSec.getConfigurationSection("extra");
-                if (extraSec != null) {
-                    slot.clearExtras();
-                    for (String key : extraSec.getKeys(false)) {
-                        slot.putExtra(key, extraSec.get(key));
-                    }
+                ConfigurationSection sec = skills.getConfigurationSection("slot-" + i);
+                if (sec == null) continue;
+                SkillSlot s = w.getSkill(i);
+                s.setMythicId(sec.getString("mythic-id", ""));
+                s.setDisplayName(sec.getString("display-name", "<gray>비어있음</gray>"));
+                s.setCooldown(sec.getDouble("cooldown", 0));
+                s.setDamage(sec.getDouble("damage", 0));
+                s.setIcon(sec.getString("icon", "BARRIER"));
+                s.setCustomModelData(sec.getInt("custom-model-data", 0));
+                s.setDescription(sec.getString("description", ""));
+                s.setEnabled(sec.getBoolean("enabled", false));
+                ConfigurationSection extra = sec.getConfigurationSection("extra");
+                if (extra != null) {
+                    s.clearExtras();
+                    for (String k : extra.getKeys(false)) s.putExtra(k, extra.get(k));
                 }
             }
         }
 
-        // ── 패시브 파싱 ──
-        ConfigurationSection passivesSec = config.getConfigurationSection("passives");
-        if (passivesSec != null) {
-            weapon.clearPassives();
+        // -- 패시브 --
+        ConfigurationSection passives = cfg.getConfigurationSection("passives");
+        if (passives != null) {
+            w.clearPassives();
             int idx = 0;
-            for (String key : passivesSec.getKeys(false)) {
-                ConfigurationSection pSec = passivesSec.getConfigurationSection(key);
-                if (pSec == null) continue;
-
+            for (String key : passives.getKeys(false)) {
+                ConfigurationSection sec = passives.getConfigurationSection(key);
+                if (sec == null) continue;
                 idx++;
-                PassiveSlot passive = new PassiveSlot(idx);
-                passive.setType(pSec.getString("type", ""));
-                passive.setTimer(pSec.getDouble("timer", 10.0));
-                passive.setCooldown(pSec.getDouble("cooldown", 0));
-
-                // type, timer, cooldown 외 모든 키 → 모디파이어
-                passive.clearModifiers();
-                for (String pKey : pSec.getKeys(false)) {
-                    if (!PassiveSlot.isStandardKey(pKey)) {
-                        passive.putModifier(pKey, toDouble(pSec.get(pKey)));
-                    }
+                PassiveSlot p = new PassiveSlot(idx);
+                p.setType(sec.getString("type", ""));
+                p.setDisplayName(sec.getString("display-name", "<gray>비어있음</gray>"));
+                p.setTimer(sec.getDouble("timer", 10.0));
+                p.setCooldown(sec.getDouble("cooldown", 0));
+                p.setIcon(sec.getString("icon", "ENDER_EYE"));
+                p.setCustomModelData(sec.getInt("custom-model-data", 0));
+                p.setDescription(sec.getString("description", ""));
+                p.setEnabled(sec.getBoolean("enabled", true));
+                p.clearModifiers();
+                for (String mk : sec.getKeys(false)) {
+                    if (!PassiveSlot.isStandardKey(mk)) p.putModifier(mk, toDouble(sec.get(mk)));
                 }
-
-                // 유효성 경고
-                if (passive.getType().isBlank()) {
-                    plugin.getLogger().warning("[" + weaponId + "] " + key + ": type이 비어있음 — 스킵");
+                if (p.getType().isBlank()) {
+                    plugin.getLogger().warning("[" + id + "] " + key + ": type 누락");
                     continue;
                 }
-                if (passive.getTimer() < 0.1) {
-                    plugin.getLogger().warning("[" + weaponId + "] " + key + ": timer가 0.1초 미만 → 0.1로 보정");
+                if (p.getTimer() < 0.1) {
+                    plugin.getLogger().warning("[" + id + "] " + key + ": timer < 0.1 -> 보정");
                 }
-
-                weapon.addPassive(passive);
+                w.addPassive(p);
             }
         }
-
-        return weapon;
+        return w;
     }
 
-    // ===================================================================
-    // 검증 로그 (서버 시작 시 콘솔 출력)
-    // ===================================================================
-
-    /**
-     * 무기 데이터의 유효성을 콘솔에 출력
-     * - 각 스킬/패시브의 type, modifiers 목록 표시
-     * - 누락된 필수 값 경고
-     */
-    private void logValidation(WeaponSkill weapon) {
-        plugin.getLogger().info("─── " + weapon.getWeaponId() + " (" + weapon.getDisplayName() + ") ───");
-
-        // 액티브 스킬 검증
+    /** 콘솔 검증 로그 */
+    private void logValidation(WeaponSkill w) {
+        plugin.getLogger().info("--- " + w.getWeaponId() + " (" + w.getMmoType() + ") ---");
         for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
-            SkillSlot s = weapon.getSkill(i);
-            if (s.isValid()) {
-                StringBuilder sb = new StringBuilder();
-                sb.append("  [슬롯 ").append(i).append("] ").append(s.getMythicId());
-                sb.append(" | DMG:").append(s.getDamage());
-                sb.append(" | CD:").append(s.getCooldown()).append("s");
-                if (!s.getExtraParams().isEmpty()) {
-                    sb.append(" | extra:").append(s.getExtraParams().keySet());
-                }
-                plugin.getLogger().info(sb.toString());
-            } else if (!s.getMythicId().isBlank()) {
-                plugin.getLogger().warning("  [슬롯 " + i + "] " + s.getMythicId() + " — enabled=false");
+            SkillSlot s = w.getSkill(i);
+            if (!s.getMythicId().isBlank()) {
+                plugin.getLogger().info("  [슬롯" + i + "] " + s.getMythicId()
+                        + " | DMG:" + s.getDamage() + " | CD:" + s.getCooldown() + "s"
+                        + " | CMD:" + s.getCustomModelData()
+                        + (s.isEnabled() ? "" : " | DISABLED")
+                        + (!s.getExtraParams().isEmpty() ? " | extra:" + s.getExtraParams().keySet() : ""));
             }
         }
-
-        // 패시브 검증
-        for (PassiveSlot p : weapon.getPassives()) {
-            StringBuilder sb = new StringBuilder();
-            sb.append("  [패시브] ").append(p.getType());
-            sb.append(" | timer:").append(p.getTimer()).append("s");
-            if (p.getCooldown() > 0) sb.append(" | CD:").append(p.getCooldown()).append("s");
-            if (!p.getModifiers().isEmpty()) {
-                sb.append(" | modifiers:").append(p.getModifiers());
-            }
-            plugin.getLogger().info(sb.toString());
+        for (PassiveSlot p : w.getPassives()) {
+            plugin.getLogger().info("  [패시브] " + p.getType()
+                    + " | T:" + p.getTimer() + "s | CD:" + p.getCooldown() + "s"
+                    + " | CMD:" + p.getCustomModelData()
+                    + (p.isEnabled() ? "" : " | DISABLED")
+                    + (!p.getModifiers().isEmpty() ? " | mods:" + p.getModifiers() : ""));
         }
     }
 
@@ -200,54 +146,49 @@ public class WeaponSkillManager {
     // 저장
     // ===================================================================
 
-    public void save(WeaponSkill weapon) {
-        File file = new File(weaponsFolder, weapon.getWeaponId() + ".yml");
-        YamlConfiguration config = new YamlConfiguration();
-
-        config.set("display-name", weapon.getDisplayName());
+    public void save(WeaponSkill w) {
+        File file = new File(weaponsFolder, w.getWeaponId() + ".yml");
+        YamlConfiguration cfg = new YamlConfiguration();
+        cfg.set("mmo-type", w.getMmoType());
+        cfg.set("display-name", w.getDisplayName());
 
         for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
-            SkillSlot s = weapon.getSkill(i);
+            SkillSlot s = w.getSkill(i);
             String p = "skills.slot-" + i;
-            config.set(p + ".mythic-id", s.getMythicId());
-            config.set(p + ".display-name", s.getDisplayName());
-            config.set(p + ".cooldown", s.getCooldown());
-            config.set(p + ".damage", s.getDamage());
-            config.set(p + ".icon", s.getIcon());
-            config.set(p + ".description", s.getDescription());
-            config.set(p + ".enabled", s.isEnabled());
-            if (!s.getExtraParams().isEmpty()) {
-                for (var e : s.getExtraParams().entrySet()) {
-                    config.set(p + ".extra." + e.getKey(), e.getValue());
-                }
-            }
+            cfg.set(p + ".mythic-id", s.getMythicId());
+            cfg.set(p + ".display-name", s.getDisplayName());
+            cfg.set(p + ".cooldown", s.getCooldown());
+            cfg.set(p + ".damage", s.getDamage());
+            cfg.set(p + ".icon", s.getIcon());
+            cfg.set(p + ".custom-model-data", s.getCustomModelData());
+            cfg.set(p + ".description", s.getDescription());
+            cfg.set(p + ".enabled", s.isEnabled());
+            if (!s.getExtraParams().isEmpty())
+                for (var e : s.getExtraParams().entrySet()) cfg.set(p + ".extra." + e.getKey(), e.getValue());
         }
 
         int pidx = 0;
-        for (PassiveSlot ps : weapon.getPassives()) {
+        for (PassiveSlot ps : w.getPassives()) {
             pidx++;
             String p = "passives.passive" + pidx;
-            config.set(p + ".type", ps.getType());
-            config.set(p + ".timer", ps.getTimer());
-            config.set(p + ".cooldown", ps.getCooldown());
-            for (var e : ps.getModifiers().entrySet()) {
-                config.set(p + "." + e.getKey(), e.getValue());
-            }
+            cfg.set(p + ".type", ps.getType());
+            cfg.set(p + ".display-name", ps.getDisplayName());
+            cfg.set(p + ".timer", ps.getTimer());
+            cfg.set(p + ".cooldown", ps.getCooldown());
+            cfg.set(p + ".icon", ps.getIcon());
+            cfg.set(p + ".custom-model-data", ps.getCustomModelData());
+            cfg.set(p + ".description", ps.getDescription());
+            cfg.set(p + ".enabled", ps.isEnabled());
+            for (var e : ps.getModifiers().entrySet()) cfg.set(p + "." + e.getKey(), e.getValue());
         }
 
-        try { config.save(file); }
+        try { cfg.save(file); }
         catch (IOException e) { plugin.getLogger().log(Level.SEVERE, "저장 실패: " + file.getName(), e); }
     }
 
-    public void saveAll() {
-        cache.values().forEach(this::save);
-        plugin.getLogger().info("[WeaponSkillManager] 전체 저장 완료 (" + cache.size() + "개)");
-    }
+    public void saveAll() { cache.values().forEach(this::save); plugin.getLogger().info("[WeaponSkillManager] 전체 저장 완료"); }
 
-    // ===================================================================
-    // 조회
-    // ===================================================================
-
+    // -- 조회 --
     public WeaponSkill getWeapon(String id) { return cache.get(id); }
     public boolean hasWeapon(String id) { return cache.containsKey(id); }
     public Collection<WeaponSkill> getAllWeapons() { return Collections.unmodifiableCollection(cache.values()); }
