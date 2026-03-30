@@ -14,7 +14,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.Sound;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
@@ -253,7 +252,7 @@ public class CombatManager {
             MythicMobsSkillHandler handler = getOrCreateHandler(mythicId);
             ModifiableSkill skill = new ModifiableSkill(handler);
             for (var e : modifiers.entrySet()) skill.registerModifier(e.getKey(), e.getValue());
-            return skill.cast(new TriggerMetadata(pd, TriggerType.API, (Entity) null)).isSuccessful();
+            return skill.cast(new TriggerMetadata(pd, TriggerType.API, null)).isSuccessful();
         } catch (Exception e) {
             plugin.getLogger().warning("[CombatManager] 시전 실패 (" + mythicId + "): " + e.getMessage());
             return false;

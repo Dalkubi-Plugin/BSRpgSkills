@@ -4,11 +4,11 @@ use-actionbar: true
 actionbar-interval: 5
 
 sounds:
-  combat-on: entity.ender_dragon.growl
-  combat-off: block.note_block.bass
+  combat-on: ""
+  combat-off: ""
   skill-cast: ""
-  cooldown-deny: block.note_block.hat
-  return-weapon: block.note_block.pling
+  cooldown-deny: ""
+  return-weapon: ""
 
 messages:
   combat-on: "<gradient:red:gold>전투 모드 ON</gradient> <yellow>{weapon}</yellow>"
