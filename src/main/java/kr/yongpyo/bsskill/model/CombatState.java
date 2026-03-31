@@ -1,99 +1,172 @@
 package kr.yongpyo.bsskill.model;
 
 import org.bukkit.scheduler.BukkitTask;
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * 플레이어 전투 모드 상태 추적
- * 전투 모드 진입 시 무기를 핫바 8(키보드 9)으로 이동, 해제 시 원래 위치로 복구
+ * 전투 모드 중 플레이어별 런타임 상태를 관리하는 객체입니다.
+ * 쿨타임, 내부 캐스팅 락, 무기 슬롯 정보만 담당하도록 단순화해
+ * "어떤 데미지 타입이 어떤 스킬을 발동시키는가"라는 규칙이 코드에 직접 드러나게 합니다.
  */
 public class CombatState {
 
-    private final UUID playerUuid;
+    /**
+     * 같은 슬롯이 매우 짧은 시간 안에 중복 발동되는 것을 막아
+     * 좌클릭 입력과 일반 공격 이벤트가 동시에 들어와도 스킬이 두 번 실행되지 않도록 합니다.
+     */
+    private static final long DOUBLE_CAST_GUARD_MILLIS = 50L;
+
     private boolean combatMode;
     private String currentWeaponId;
-
-    /** 무기가 위치한 핫바 슬롯 (전투 모드 중 항상 8) */
     private int weaponSlot = -1;
-
-    /** 전투 진입 전 무기가 있던 핫바 슬롯 (복구용) */
     private int originalSlot = -1;
-
-    /** 슬롯 스왑이 실행되었는지 여부 */
-    private boolean swapped = false;
+    private boolean swapped;
 
     private final Map<Integer, Long> cooldowns = new HashMap<>();
     private final List<BukkitTask> timerTasks = new ArrayList<>();
+    private final Map<Integer, Long> lastCastTimes = new HashMap<>();
 
     /**
-     * 슬롯별 마지막 시전 시각 (동일 틱 중복 시전 방지)
-     * 좌클릭 시 PlayerInteractEvent + EntityDamageByEntityEvent가 같은 틱에 발생할 수 있음
+     * 동일 이벤트 체인 안에서 재귀 캐스팅이 일어나지 않도록
+     * MythicLib 캐스팅 호출 구간 동안만 잠시 true가 됩니다.
      */
-    private final Map<Integer, Long> lastCastTime = new HashMap<>();
+    private volatile boolean internalCasting;
 
-    /** 동일 틱 중복 시전 방지 간격 (ms) — 1틱 = 50ms */
-    private static final long DOUBLE_CAST_GUARD = 50L;
-
-    public CombatState(UUID playerUuid) { this.playerUuid = playerUuid; }
-
-    // -- 쿨타임 --
     public void setCooldown(int slot, double seconds) {
+        // 초 단위 쿨타임을 시스템 시각 기준 만료 시점으로 변환해 보관합니다.
         cooldowns.put(slot, System.currentTimeMillis() + (long) (seconds * 1000));
     }
+
     public boolean isOnCooldown(int slot) {
-        Long e = cooldowns.get(slot);
-        return e != null && System.currentTimeMillis() < e;
+        Long expiresAt = cooldowns.get(slot);
+        return expiresAt != null && System.currentTimeMillis() < expiresAt;
     }
+
     public double getRemainingCooldown(int slot) {
-        Long e = cooldowns.get(slot);
-        if (e == null) return 0;
-        long r = e - System.currentTimeMillis();
-        return r > 0 ? r / 1000.0 : 0;
+        Long expiresAt = cooldowns.get(slot);
+        if (expiresAt == null) {
+            return 0;
+        }
+
+        return Math.max(0, (expiresAt - System.currentTimeMillis()) / 1000.0);
     }
-    public void clearAllCooldowns() { cooldowns.clear(); }
+
+    public void clearAllCooldowns() {
+        cooldowns.clear();
+    }
 
     /**
-     * 동일 틱 중복 시전인지 확인 (true면 중복 → 스킵 필요)
+     * 현재 남아 있는 쿨타임만 디버그/표시용으로 복사해 반환합니다.
+     * 이미 끝난 쿨타임은 제외해 실제로 의미 있는 값만 보이게 합니다.
      */
+    public Map<Integer, Double> getCooldownSnapshot() {
+        Map<Integer, Double> snapshot = new LinkedHashMap<>();
+        for (Integer key : cooldowns.keySet()) {
+            double remaining = getRemainingCooldown(key);
+            if (remaining > 0) {
+                snapshot.put(key, remaining);
+            }
+        }
+        return snapshot;
+    }
+
     public boolean isDoubleCast(int slot) {
-        Long last = lastCastTime.get(slot);
-        return last != null && (System.currentTimeMillis() - last) < DOUBLE_CAST_GUARD;
+        // 같은 입력이 클릭/공격 이벤트로 연속 유입될 수 있으므로 최근 발동 시간을 확인합니다.
+        Long lastCastAt = lastCastTimes.get(slot);
+        return lastCastAt != null && (System.currentTimeMillis() - lastCastAt) < DOUBLE_CAST_GUARD_MILLIS;
     }
 
-    /** 시전 시각 기록 */
     public void markCast(int slot) {
-        lastCastTime.put(slot, System.currentTimeMillis());
+        // 실제 캐스팅을 시작하는 순간을 기록해 동일 슬롯 중복 발동을 방지합니다.
+        lastCastTimes.put(slot, System.currentTimeMillis());
     }
 
-    // -- 타이머 --
-    public void addTimerTask(BukkitTask t) { timerTasks.add(t); }
+    public boolean canTriggerSkill(int slot) {
+        // 내부 캐스팅 중이 아니고, 아주 짧은 중복 발동 보호 구간도 지난 경우에만 허용합니다.
+        return !internalCasting && !isDoubleCast(slot);
+    }
+
+    public boolean isInternalCasting() {
+        return internalCasting;
+    }
+
+    public void setInternalCasting(boolean internalCasting) {
+        this.internalCasting = internalCasting;
+    }
+
+    public void addTimerTask(BukkitTask task) {
+        timerTasks.add(task);
+    }
+
     public void cancelAllTimers() {
-        for (BukkitTask t : timerTasks) { if (!t.isCancelled()) t.cancel(); }
+        // 전투 종료 시 패시브 타이머가 남아 있으면 메모리 누수와 유령 발동이 생길 수 있어 전부 정리합니다.
+        timerTasks.forEach(task -> {
+            if (!task.isCancelled()) {
+                task.cancel();
+            }
+        });
         timerTasks.clear();
     }
 
-    // -- 무기 슬롯 --
-    public boolean isHoldingWeapon(int heldSlot) { return weaponSlot >= 0 && heldSlot == weaponSlot; }
+    public boolean isHoldingWeapon(int heldSlot) {
+        return weaponSlot >= 0 && heldSlot == weaponSlot;
+    }
 
-    /** 전투 모드 해제 시 전체 초기화 (인벤토리 복구는 CombatManager에서 처리) */
     public void reset() {
+        // 전투 모드가 끝나면 런타임 상태를 완전히 초기화해 다음 전투에 이전 정보가 섞이지 않게 합니다.
         combatMode = false;
         currentWeaponId = null;
         weaponSlot = -1;
+        originalSlot = -1;
+        swapped = false;
+        internalCasting = false;
         clearAllCooldowns();
         cancelAllTimers();
+        lastCastTimes.clear();
     }
 
-    // -- Getters & Setters --
-    public UUID getPlayerUuid() { return playerUuid; }
-    public boolean isCombatMode() { return combatMode; }
-    public void setCombatMode(boolean v) { combatMode = v; }
-    public String getCurrentWeaponId() { return currentWeaponId; }
-    public void setCurrentWeaponId(String v) { currentWeaponId = v; }
-    public int getWeaponSlot() { return weaponSlot; }
-    public void setWeaponSlot(int v) { weaponSlot = v; }
-    public int getOriginalSlot() { return originalSlot; }
-    public void setOriginalSlot(int v) { originalSlot = v; }
-    public boolean isSwapped() { return swapped; }
-    public void setSwapped(boolean v) { swapped = v; }
+    public boolean isCombatMode() {
+        return combatMode;
+    }
+
+    public void setCombatMode(boolean combatMode) {
+        this.combatMode = combatMode;
+    }
+
+    public String getCurrentWeaponId() {
+        return currentWeaponId;
+    }
+
+    public void setCurrentWeaponId(String currentWeaponId) {
+        this.currentWeaponId = currentWeaponId;
+    }
+
+    public int getWeaponSlot() {
+        return weaponSlot;
+    }
+
+    public void setWeaponSlot(int weaponSlot) {
+        this.weaponSlot = weaponSlot;
+    }
+
+    public int getOriginalSlot() {
+        return originalSlot;
+    }
+
+    public void setOriginalSlot(int originalSlot) {
+        this.originalSlot = originalSlot;
+    }
+
+    public boolean isSwapped() {
+        return swapped;
+    }
+
+    public void setSwapped(boolean swapped) {
+        this.swapped = swapped;
+    }
 }

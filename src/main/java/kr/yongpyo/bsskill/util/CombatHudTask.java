@@ -25,7 +25,9 @@ public class CombatHudTask extends BukkitRunnable {
 
     public void start() {
         int interval = plugin.getConfig().getInt("actionbar-interval", 5);
-        runTaskTimerAsynchronously(plugin, 0L, Math.max(1, interval));
+        // Bukkit 엔티티/플레이어 API는 메인 스레드 기준으로 다루는 것이 안전하므로
+        // HUD 갱신도 동기 태스크로 실행해 서버 상태와 충돌하지 않도록 합니다.
+        runTaskTimer(plugin, 0L, Math.max(1, interval));
     }
 
     @Override
@@ -50,7 +52,9 @@ public class CombatHudTask extends BukkitRunnable {
             }
 
             Component bar = mm.deserialize(sb.toString().trim());
-            Bukkit.getScheduler().runTask(plugin, () -> { if (player.isOnline()) player.sendActionBar(bar); });
+            if (player.isOnline()) {
+                player.sendActionBar(bar);
+            }
         }
     }
 }

@@ -3,81 +3,110 @@
 #  파일명 = MMOITEMS_ITEM_ID
 # ========================================
 
-# MMOItems 타입
 mmo-type: SWORD
+display-name: "<#e1ff8f>생명의 정령 지팡이</#e1ff8f>"
 
-display-name: "<#e1ff8f>생명의 성령주각"
-
-# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: PRIMAL_COMBO
-    display-name: "<gradient:#fff9ae:#f8e246>원초의 연격</gradient>"
-    cooldown: 0.3
-    damage: 3
-    icon: STICK
-    custom-model-data: 0
-    description: "태세에 따라 뇌전의 연격이나 치유의 광선을 발사합니다. 4타 시전 시 조준한 위치에 강력한 속성의 낙뢰를 소환합니다."
     enabled: true
+    timing:
+      cooldown: 0.3
+    display:
+      name: "<gradient:#fff9ae:#f8e246>원시의 연격</gradient>"
+      description: "자연의 힘을 모아 연속 타격하거나 회복 광선을 발사합니다."
+      icon: STICK
+      custom-model-data: 0
+    modifiers:
+      damage: 3
+      ratio: 1.0
 
   slot-2:
     mythic-id: ECHO_STEP
-    display-name: "<gradient:#b5eeff:#4facfe>메아리의 발걸음</gradient>"
-    cooldown: 2
-    damage: 0
-    icon: FEATHER
-    custom-model-data: 0
-    description: "순간적으로 영체 상태가 되어 이동 방향으로 신속하게 돌진합니다. 영체화된 동안에는 모든 피해로부터 면역이 됩니다."
     enabled: true
+    timing:
+      cooldown: 2
+    display:
+      name: "<gradient:#b5eeff:#4facfe>메아리의 발걸음</gradient>"
+      description: "영체화 상태로 빠르게 이동하며 짧은 시간 동안 피해를 흘려보냅니다."
+      icon: FEATHER
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      dash_distance: 5
 
   slot-3:
     mythic-id: RITUAL_TOTEM
-    display-name: "<gradient:#ffcc33:#ffb347>선조의 제의 토템</gradient>"
-    cooldown: 3
-    damage: 3
-    icon: OAK_FENCE
-    custom-model-data: 0
-    description: "적을 추적하는 영령을 뿜는 사냥꾼 토템이나, 적의 진입을 차단하고 아군을 치유하는 수호자 토템을 소환합니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#ffcc33:#ffb347>주술의 토템</gradient>"
+      description: "적을 견제하거나 아군을 지원하는 토템을 소환합니다."
+      icon: OAK_FENCE
+      custom-model-data: 0
+    modifiers:
+      damage: 3
+      ratio: 1.0
+      totem_duration: 8
 
   slot-4:
     mythic-id: EARTHEN_EMBRACE
-    display-name: "<gradient:#91f48f:#38a333>대지의 포옹</gradient>"
-    cooldown: 3
-    damage: 0
-    icon: DIRT
-    custom-model-data: 0
-    description: "전방의 냉기 오라를 흡수하여 적들을 끌어당깁니다. 이후 지면에서 거대한 얼음 가시들을 솟구치게 하여 적을 둔화시킵니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#91f48f:#38a333>대지의 포옹</gradient>"
+      description: "땅의 기운을 불러 적을 속박하고 지속 피해를 부여합니다."
+      icon: DIRT
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      root_duration: 2.5
 
   slot-5:
     mythic-id: ANCESTRAL_HANDS
-    display-name: "<gradient:#ff7e5f:#feb47b>선조의 손길</gradient>"
-    cooldown: 7
-    damage: 7
-    icon: WITHER_SKELETON_SKULL
-    custom-model-data: 0
-    description: "거대한 영혼의 손을 소환하여 적을 기절시키거나, 아군을 들어 올려 모든 피해로부터 보호하고 지속적으로 치유합니다."
     enabled: true
+    timing:
+      cooldown: 7
+    display:
+      name: "<gradient:#ff7e5f:#feb47b>조상신의 손길</gradient>"
+      description: "적을 제압하거나 아군을 감싸는 강력한 축복을 부여합니다."
+      icon: WITHER_SKELETON_SKULL
+      custom-model-data: 0
+    modifiers:
+      damage: 7
+      ratio: 1.0
+      heal: 5
 
   slot-6:
     mythic-id: STANCE_SWITCH
-    display-name: "<gradient:#da22ff:#9733ee>영혼의 태세 전환</gradient>"
-    cooldown: 2
-    damage: 0
-    icon: CLOCK
-    custom-model-data: 0
-    description: "지면에 거대한 얼음 수정을 생성하여 적을 빙결시키고 태세를 전환합니다. 수정이 파괴될 때 주변에 치명적인 추가 피해를 입힙니다."
     enabled: true
+    timing:
+      cooldown: 2
+    display:
+      name: "<gradient:#da22ff:#9733ee>정령 자세 전환</gradient>"
+      description: "냉기와 주술의 자세를 전환해 다음 스킬의 성격을 바꿉니다."
+      icon: CLOCK
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      switch_duration: 4
 
-# ── 패시브 (SOUL_LINK) ──
 passives:
-  passive1:
+  passive-1:
     type: SOUL_LINK
-    display-name: "<gradient:#ffffff:#e1ff8f>영혼의 결속</gradient>"
-    timer: 2
-    cooldown: 0
-    icon: ENDER_EYE
-    custom-model-data: 0
-    description: "가까운 아군과 영적 선으로 연결됩니다. 태세에 따라 연결된 아군의 공격력을 강화하거나 생명력을 지속적으로 회복시킵니다."
     enabled: true
+    timing:
+      interval: 2
+      cooldown: 0
+    display:
+      name: "<gradient:#ffffff:#e1ff8f>영혼의 결속</gradient>"
+      description: "주변 아군과 영혼의 연결을 만들어 회복과 강화 효과를 부여합니다."
+      icon: ENDER_EYE
+      custom-model-data: 0
+    modifiers:
+      heal: 3

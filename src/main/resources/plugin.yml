@@ -18,7 +18,7 @@ softdepend:
 commands:
   bsskill:
     description: 'BSSkill 관리 명령어'
-    usage: '/<command> <editor|reload|list|info|toggle|save>'
+    usage: '/<command> <editor|reload|list|info|toggle|save|debug|debuglog>'
     permission: bsskill.admin
 
 permissions:

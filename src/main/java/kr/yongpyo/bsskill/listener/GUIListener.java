@@ -1,16 +1,23 @@
 package kr.yongpyo.bsskill.listener;
 
 import kr.yongpyo.bsskill.BSSkill;
-import kr.yongpyo.bsskill.gui.GUIManager.*;
-import kr.yongpyo.bsskill.model.*;
+import kr.yongpyo.bsskill.gui.GUIManager.PassiveEditHolder;
+import kr.yongpyo.bsskill.gui.GUIManager.SkillEditHolder;
+import kr.yongpyo.bsskill.gui.GUIManager.WeaponDetailHolder;
+import kr.yongpyo.bsskill.gui.GUIManager.WeaponListHolder;
+import kr.yongpyo.bsskill.model.PassiveSlot;
+import kr.yongpyo.bsskill.model.SkillSlot;
+import kr.yongpyo.bsskill.model.WeaponSkill;
+import kr.yongpyo.bsskill.util.ModifierValidator;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.inventory.*;
+import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.util.Map;
@@ -18,9 +25,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * GUI 에디터 이벤트 핸들러
- * 아이템 유출/복사 방지: shift-click, number-key, drag 전부 차단
- * 패시브 편집 GUI 포함 (액티브와 동일 디자인)
+ * BSSkill GUI의 클릭과 채팅 입력을 처리합니다.
+ * 채팅 입력은 임시 컨텍스트에 저장한 뒤 메인 스레드에서 안전하게 반영합니다.
  */
 public class GUIListener implements Listener {
 
@@ -28,213 +34,427 @@ public class GUIListener implements Listener {
     private final MiniMessage mm = MiniMessage.miniMessage();
     private final Map<UUID, InputCtx> pending = new ConcurrentHashMap<>();
 
-    public GUIListener(BSSkill plugin) { this.plugin = plugin; }
-
-    // ===================================================================
-    // 아이템 유출 방지 — drag 이벤트
-    // ===================================================================
+    public GUIListener(BSSkill plugin) {
+        this.plugin = plugin;
+    }
 
     @EventHandler
     public void onDrag(InventoryDragEvent event) {
-        if (isBSSkillGUI(event.getInventory())) event.setCancelled(true);
+        if (isBSSkillGUI(event.getInventory())) {
+            event.setCancelled(true);
+        }
     }
 
-    private boolean isBSSkillGUI(org.bukkit.inventory.Inventory inv) {
-        var h = inv.getHolder();
-        return h instanceof WeaponListHolder || h instanceof WeaponDetailHolder
-                || h instanceof SkillEditHolder || h instanceof PassiveEditHolder;
+    private boolean isBSSkillGUI(org.bukkit.inventory.Inventory inventory) {
+        var holder = inventory.getHolder();
+        return holder instanceof WeaponListHolder
+                || holder instanceof WeaponDetailHolder
+                || holder instanceof SkillEditHolder
+                || holder instanceof PassiveEditHolder;
     }
-
-    // ===================================================================
-    // 클릭 라우터 — shift-click, number-key 차단
-    // ===================================================================
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (!(event.getWhoClicked() instanceof Player p)) return;
-        var holder = event.getInventory().getHolder();
-
-        // BSSkill GUI가 아니면 무시
-        if (!isBSSkillGUI(event.getInventory())) return;
-
-        // 아이템 유출 방지: shift-click, number-key, 하단 인벤토리 클릭 전부 차단
-        event.setCancelled(true);
-        if (event.getClickedInventory() != event.getInventory()) return; // 하단 클릭 무시
-
-        if (holder instanceof WeaponListHolder h) handleWeaponList(p, h, event);
-        else if (holder instanceof WeaponDetailHolder h) handleWeaponDetail(p, h, event);
-        else if (holder instanceof SkillEditHolder h) handleSkillEdit(p, h, event);
-        else if (holder instanceof PassiveEditHolder h) handlePassiveEdit(p, h, event);
-    }
-
-    // ===================================================================
-    // 1단계: 무기 목록
-    // ===================================================================
-
-    private void handleWeaponList(Player p, WeaponListHolder h, InventoryClickEvent e) {
-        String id = h.getWeaponId(e.getSlot());
-        if (id == null) return;
-        WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(id);
-        if (w != null) { plugin.getGUIManager().openWeaponDetailGUI(p, w); click(p); }
-    }
-
-    // ===================================================================
-    // 2단계: 무기 상세
-    // ===================================================================
-
-    private void handleWeaponDetail(Player p, WeaponDetailHolder h, InventoryClickEvent e) {
-        int slot = e.getSlot();
-
-        // 뒤로 (45)
-        if (slot == 45) { plugin.getGUIManager().openWeaponListGUI(p); click(p); return; }
-
-        // 액티브 스킬 (19~24)
-        if (slot >= 19 && slot <= 24) {
-            int skillSlot = slot - 18; // 19→1, 24→6
-            WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(h.getWeaponId());
-            if (w != null) { plugin.getGUIManager().openSkillEditGUI(p, w, skillSlot); click(p); }
+        if (!(event.getWhoClicked() instanceof Player player)) {
+            return;
+        }
+        if (!isBSSkillGUI(event.getInventory())) {
             return;
         }
 
-        // 패시브 (37~43)
-        Integer passiveIdx = h.getPassiveIndex(slot);
-        if (passiveIdx != null) {
-            WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(h.getWeaponId());
-            if (w != null) { plugin.getGUIManager().openPassiveEditGUI(p, w, passiveIdx); click(p); }
+        event.setCancelled(true);
+        if (event.getClickedInventory() != event.getInventory()) {
+            return;
+        }
+
+        var holder = event.getInventory().getHolder();
+        if (holder instanceof WeaponListHolder weaponListHolder) {
+            handleWeaponList(player, weaponListHolder, event);
+            return;
+        }
+        if (holder instanceof WeaponDetailHolder weaponDetailHolder) {
+            handleWeaponDetail(player, weaponDetailHolder, event);
+            return;
+        }
+        if (holder instanceof SkillEditHolder skillEditHolder) {
+            handleSkillEdit(player, skillEditHolder, event);
+            return;
+        }
+        if (holder instanceof PassiveEditHolder passiveEditHolder) {
+            handlePassiveEdit(player, passiveEditHolder, event);
         }
     }
 
-    // ===================================================================
-    // 3단계: 액티브 편집
-    // ===================================================================
+    private void handleWeaponList(Player player, WeaponListHolder holder, InventoryClickEvent event) {
+        String weaponId = holder.getWeaponId(event.getSlot());
+        if (weaponId == null) {
+            return;
+        }
 
-    private void handleSkillEdit(Player p, SkillEditHolder h, InventoryClickEvent e) {
-        WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(h.getWeaponId());
-        if (w == null) return;
-        SkillSlot s = w.getSkill(h.getSlotNumber());
-        if (s == null) return;
-        ClickType c = e.getClick();
-
-        switch (e.getSlot()) {
-            case 10 -> { s.setEnabled(!s.isEnabled()); saveRefreshSkill(p, w, h.getSlotNumber()); }
-            case 11 -> { p.closeInventory(); startInput(p, InputType.SKILL_ID, h.getWeaponId(), h.getSlotNumber(), -1, null); prompt(p, "MythicMobs 스킬 ID"); }
-            case 12 -> { p.closeInventory(); startInput(p, InputType.SKILL_NAME, h.getWeaponId(), h.getSlotNumber(), -1, null); prompt(p, "표시 이름 (MiniMessage)"); }
-            case 14 -> { double d = delta(c, 1, 5); if (d != 0) { s.setDamage(s.getDamage() + d); saveRefreshSkill(p, w, h.getSlotNumber()); } }
-            case 15 -> { double d = delta(c, 0.5, 5); if (d != 0) { s.setCooldown(s.getCooldown() + d); saveRefreshSkill(p, w, h.getSlotNumber()); } }
-            case 16 -> { p.closeInventory(); startInput(p, InputType.SKILL_DESC, h.getWeaponId(), h.getSlotNumber(), -1, null); prompt(p, "스킬 설명"); }
-            case 27 -> { plugin.getGUIManager().openWeaponDetailGUI(p, w); click(p); }
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(weaponId);
+        if (weapon != null) {
+            plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
+            click(player);
         }
     }
 
-    // ===================================================================
-    // 4단계: 패시브 편집
-    // ===================================================================
+    private void handleWeaponDetail(Player player, WeaponDetailHolder holder, InventoryClickEvent event) {
+        int slot = event.getSlot();
 
-    private void handlePassiveEdit(Player p, PassiveEditHolder h, InventoryClickEvent e) {
-        WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(h.getWeaponId());
-        if (w == null) return;
-        if (h.getPassiveIndex() >= w.getPassives().size()) return;
-        PassiveSlot ps = w.getPassives().get(h.getPassiveIndex());
-        ClickType c = e.getClick();
+        if (slot == 45) {
+            plugin.getGUIManager().openWeaponListGUI(player);
+            click(player);
+            return;
+        }
 
-        switch (e.getSlot()) {
-            case 10 -> { ps.setEnabled(!ps.isEnabled()); saveRefreshPassive(p, w, h.getPassiveIndex()); }
-            case 11 -> { p.closeInventory(); startInput(p, InputType.PASSIVE_TYPE, h.getWeaponId(), -1, h.getPassiveIndex(), null); prompt(p, "MythicMobs 스킬 ID"); }
-            case 12 -> { p.closeInventory(); startInput(p, InputType.PASSIVE_NAME, h.getWeaponId(), -1, h.getPassiveIndex(), null); prompt(p, "표시 이름 (MiniMessage)"); }
-            case 14 -> { double d = delta(c, 0.5, 5); if (d != 0) { ps.setTimer(ps.getTimer() + d); saveRefreshPassive(p, w, h.getPassiveIndex()); } }
-            case 15 -> { double d = delta(c, 0.5, 5); if (d != 0) { ps.setCooldown(ps.getCooldown() + d); saveRefreshPassive(p, w, h.getPassiveIndex()); } }
-            case 16 -> { p.closeInventory(); startInput(p, InputType.PASSIVE_DESC, h.getWeaponId(), -1, h.getPassiveIndex(), null); prompt(p, "설명"); }
-            case 27 -> { plugin.getGUIManager().openWeaponDetailGUI(p, w); click(p); }
+        if (slot >= 19 && slot <= 24) {
+            int skillSlot = slot - 18;
+            WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(holder.getWeaponId());
+            if (weapon != null) {
+                plugin.getGUIManager().openSkillEditGUI(player, weapon, skillSlot);
+                click(player);
+            }
+            return;
+        }
+
+        Integer passiveIndex = holder.getPassiveIndex(slot);
+        if (passiveIndex != null) {
+            WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(holder.getWeaponId());
+            if (weapon != null) {
+                plugin.getGUIManager().openPassiveEditGUI(player, weapon, passiveIndex);
+                click(player);
+            }
+        }
+    }
+
+    private void handleSkillEdit(Player player, SkillEditHolder holder, InventoryClickEvent event) {
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(holder.getWeaponId());
+        if (weapon == null) {
+            return;
+        }
+
+        SkillSlot skill = weapon.getSkill(holder.getSlotNumber());
+        if (skill == null) {
+            return;
+        }
+
+        ClickType clickType = event.getClick();
+        switch (event.getSlot()) {
+            case 10 -> {
+                skill.setEnabled(!skill.isEnabled());
+                saveRefreshSkill(player, weapon, holder.getSlotNumber());
+            }
+            case 11 -> {
+                player.closeInventory();
+                startInput(player, InputType.SKILL_ID, holder.getWeaponId(), holder.getSlotNumber(), -1);
+                prompt(player, "MythicMobs 스킬 ID");
+            }
+            case 12 -> {
+                player.closeInventory();
+                startInput(player, InputType.SKILL_NAME, holder.getWeaponId(), holder.getSlotNumber(), -1);
+                prompt(player, "표시 이름 (MiniMessage 가능)");
+            }
+            case 14 -> {
+                double delta = delta(clickType, 1, 5);
+                if (delta != 0) {
+                    skill.setDamage(skill.getDamage() + delta);
+                    saveRefreshSkill(player, weapon, holder.getSlotNumber());
+                }
+            }
+            case 15 -> {
+                double delta = delta(clickType, 0.5, 5);
+                if (delta != 0) {
+                    skill.setCooldown(skill.getCooldown() + delta);
+                    saveRefreshSkill(player, weapon, holder.getSlotNumber());
+                }
+            }
+            case 16 -> {
+                player.closeInventory();
+                startInput(player, InputType.SKILL_DESC, holder.getWeaponId(), holder.getSlotNumber(), -1);
+                prompt(player, "스킬 설명");
+            }
+            case 25 -> {
+                player.closeInventory();
+                startInput(player, InputType.SKILL_MODIFIER, holder.getWeaponId(), holder.getSlotNumber(), -1);
+                prompt(player, "modifier를 key:value 형식으로 입력");
+            }
+            case 27 -> {
+                plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
+                click(player);
+            }
             default -> {
-                // 모디파이어 수치 조정 (슬롯 20~25)
-                String modKey = h.getModifierKey(e.getSlot());
-                if (modKey != null) {
-                    double d = delta(c, 1, 5);
-                    if (d != 0) {
-                        double curr = ps.getModifiers().getOrDefault(modKey, 0.0);
-                        ps.putModifier(modKey, Math.max(0, curr + d));
-                        saveRefreshPassive(p, w, h.getPassiveIndex());
-                    }
+                String modifierKey = holder.getModifierKey(event.getSlot());
+                if (modifierKey == null) {
+                    return;
+                }
+
+                double delta = delta(clickType, 1, 5);
+                if (delta != 0) {
+                    double current = skill.getModifiers().getOrDefault(modifierKey, 0.0);
+                    skill.putModifier(modifierKey, Math.max(0, current + delta));
+                    saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
         }
     }
 
-    // ===================================================================
-    // 채팅 입력
-    // ===================================================================
+    private void handlePassiveEdit(Player player, PassiveEditHolder holder, InventoryClickEvent event) {
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(holder.getWeaponId());
+        if (weapon == null || holder.getPassiveIndex() >= weapon.getPassives().size()) {
+            return;
+        }
 
-    private void startInput(Player p, InputType type, String wId, int slot, int passive, String modKey) {
-        pending.put(p.getUniqueId(), new InputCtx(type, wId, slot, passive, modKey));
+        PassiveSlot passive = weapon.getPassives().get(holder.getPassiveIndex());
+        ClickType clickType = event.getClick();
+
+        switch (event.getSlot()) {
+            case 10 -> {
+                passive.setEnabled(!passive.isEnabled());
+                saveRefreshPassive(player, weapon, holder.getPassiveIndex());
+            }
+            case 11 -> {
+                player.closeInventory();
+                startInput(player, InputType.PASSIVE_TYPE, holder.getWeaponId(), -1, holder.getPassiveIndex());
+                prompt(player, "MythicMobs 스킬 ID");
+            }
+            case 12 -> {
+                player.closeInventory();
+                startInput(player, InputType.PASSIVE_NAME, holder.getWeaponId(), -1, holder.getPassiveIndex());
+                prompt(player, "표시 이름 (MiniMessage 가능)");
+            }
+            case 14 -> {
+                double delta = delta(clickType, 0.5, 5);
+                if (delta != 0) {
+                    passive.setTimer(passive.getTimer() + delta);
+                    saveRefreshPassive(player, weapon, holder.getPassiveIndex());
+                }
+            }
+            case 15 -> {
+                double delta = delta(clickType, 0.5, 5);
+                if (delta != 0) {
+                    passive.setCooldown(passive.getCooldown() + delta);
+                    saveRefreshPassive(player, weapon, holder.getPassiveIndex());
+                }
+            }
+            case 16 -> {
+                player.closeInventory();
+                startInput(player, InputType.PASSIVE_DESC, holder.getWeaponId(), -1, holder.getPassiveIndex());
+                prompt(player, "패시브 설명");
+            }
+            case 27 -> {
+                plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
+                click(player);
+            }
+            default -> {
+                String modifierKey = holder.getModifierKey(event.getSlot());
+                if (modifierKey == null) {
+                    return;
+                }
+
+                double delta = delta(clickType, 1, 5);
+                if (delta != 0) {
+                    double current = passive.getModifiers().getOrDefault(modifierKey, 0.0);
+                    passive.putModifier(modifierKey, Math.max(0, current + delta));
+                    saveRefreshPassive(player, weapon, holder.getPassiveIndex());
+                }
+            }
+        }
     }
 
-    private void prompt(Player p, String label) {
-        p.sendMessage(mm.deserialize("<gray>" + label + "을 입력하세요. (cancel = 취소)</gray>"));
+    private void startInput(Player player, InputType type, String weaponId, int slot, int passive) {
+        pending.put(player.getUniqueId(), new InputCtx(type, weaponId, slot, passive));
+    }
+
+    private void prompt(Player player, String label) {
+        player.sendMessage(mm.deserialize("<gray>" + label + "을 입력하세요. <dark_gray>(cancel = 취소)</dark_gray></gray>"));
     }
 
     @SuppressWarnings("deprecation")
     @EventHandler
     public void onChat(AsyncPlayerChatEvent event) {
-        Player p = event.getPlayer();
-        InputCtx ctx = pending.remove(p.getUniqueId());
-        if (ctx == null) return;
+        Player player = event.getPlayer();
+        InputCtx ctx = pending.remove(player.getUniqueId());
+        if (ctx == null) {
+            return;
+        }
+
         event.setCancelled(true);
         String input = event.getMessage().trim();
 
         if ("cancel".equalsIgnoreCase(input)) {
-            p.sendMessage(mm.deserialize("<gray>취소됨</gray>"));
-            Bukkit.getScheduler().runTask(plugin, () -> reopen(p, ctx));
+            player.sendMessage(mm.deserialize("<gray>입력이 취소되었습니다.</gray>"));
+            Bukkit.getScheduler().runTask(plugin, () -> reopen(player, ctx));
             return;
         }
 
         Bukkit.getScheduler().runTask(plugin, () -> {
-            WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(ctx.weaponId);
-            if (w == null) return;
-
-            switch (ctx.type) {
-                case SKILL_ID -> { SkillSlot s = w.getSkill(ctx.slot); if (s != null) s.setMythicId(input.toUpperCase()); }
-                case SKILL_NAME -> { SkillSlot s = w.getSkill(ctx.slot); if (s != null) s.setDisplayName(input); }
-                case SKILL_DESC -> { SkillSlot s = w.getSkill(ctx.slot); if (s != null) s.setDescription(input); }
-                case PASSIVE_TYPE -> { if (ctx.passive < w.getPassives().size()) w.getPassives().get(ctx.passive).setType(input.toUpperCase()); }
-                case PASSIVE_NAME -> { if (ctx.passive < w.getPassives().size()) w.getPassives().get(ctx.passive).setDisplayName(input); }
-                case PASSIVE_DESC -> { if (ctx.passive < w.getPassives().size()) w.getPassives().get(ctx.passive).setDescription(input); }
+            WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(ctx.weaponId);
+            if (weapon == null) {
+                return;
             }
-            plugin.getWeaponSkillManager().save(w);
-            p.sendMessage(mm.deserialize("<green>저장 완료</green>"));
-            reopen(p, ctx);
+
+            boolean updated = applyInput(player, weapon, ctx, input);
+            if (updated) {
+                plugin.getWeaponSkillManager().save(weapon);
+                player.sendMessage(mm.deserialize("<green>변경 사항을 저장했습니다.</green>"));
+            }
+            reopen(player, ctx);
         });
     }
 
-    private void reopen(Player p, InputCtx ctx) {
-        WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(ctx.weaponId);
-        if (w == null) return;
-        if (ctx.slot > 0) plugin.getGUIManager().openSkillEditGUI(p, w, ctx.slot);
-        else if (ctx.passive >= 0) plugin.getGUIManager().openPassiveEditGUI(p, w, ctx.passive);
-        else plugin.getGUIManager().openWeaponDetailGUI(p, w);
+    private boolean applyInput(Player player, WeaponSkill weapon, InputCtx ctx, String input) {
+        return switch (ctx.type) {
+            case SKILL_ID -> applySkillId(weapon, ctx.slot, input);
+            case SKILL_NAME -> applySkillName(weapon, ctx.slot, input);
+            case SKILL_DESC -> applySkillDescription(weapon, ctx.slot, input);
+            case SKILL_MODIFIER -> applySkillModifierInput(player, weapon, ctx.slot, input);
+            case PASSIVE_TYPE -> applyPassiveType(weapon, ctx.passive, input);
+            case PASSIVE_NAME -> applyPassiveName(weapon, ctx.passive, input);
+            case PASSIVE_DESC -> applyPassiveDescription(weapon, ctx.passive, input);
+        };
     }
 
-    // ===================================================================
-    // 유틸
-    // ===================================================================
+    private boolean applySkillId(WeaponSkill weapon, int slot, String input) {
+        SkillSlot skill = weapon.getSkill(slot);
+        if (skill == null || input.isBlank()) {
+            return false;
+        }
 
-    private void saveRefreshSkill(Player p, WeaponSkill w, int slot) {
-        plugin.getWeaponSkillManager().save(w);
-        plugin.getGUIManager().openSkillEditGUI(p, w, slot);
-        click(p);
+        skill.setMythicId(input.trim().toUpperCase());
+        return true;
     }
 
-    private void saveRefreshPassive(Player p, WeaponSkill w, int passiveIdx) {
-        plugin.getWeaponSkillManager().save(w);
-        plugin.getGUIManager().openPassiveEditGUI(p, w, passiveIdx);
-        click(p);
+    private boolean applySkillName(WeaponSkill weapon, int slot, String input) {
+        SkillSlot skill = weapon.getSkill(slot);
+        if (skill == null || input.isBlank()) {
+            return false;
+        }
+
+        skill.setDisplayName(input.trim());
+        return true;
     }
 
-    private double delta(ClickType c, double sm, double lg) {
-        return switch (c) { case LEFT -> -sm; case RIGHT -> sm; case SHIFT_LEFT -> -lg; case SHIFT_RIGHT -> lg; default -> 0; };
+    private boolean applySkillDescription(WeaponSkill weapon, int slot, String input) {
+        SkillSlot skill = weapon.getSkill(slot);
+        if (skill == null) {
+            return false;
+        }
+
+        skill.setDescription(input.trim());
+        return true;
     }
 
-    private void click(Player p) { p.playSound(p.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f); }
+    private boolean applyPassiveType(WeaponSkill weapon, int passiveIndex, String input) {
+        if (passiveIndex < 0 || passiveIndex >= weapon.getPassives().size() || input.isBlank()) {
+            return false;
+        }
 
-    private enum InputType { SKILL_ID, SKILL_NAME, SKILL_DESC, PASSIVE_TYPE, PASSIVE_NAME, PASSIVE_DESC }
-    private record InputCtx(InputType type, String weaponId, int slot, int passive, String modKey) {}
+        weapon.getPassives().get(passiveIndex).setType(input.trim().toUpperCase());
+        return true;
+    }
+
+    private boolean applyPassiveName(WeaponSkill weapon, int passiveIndex, String input) {
+        if (passiveIndex < 0 || passiveIndex >= weapon.getPassives().size() || input.isBlank()) {
+            return false;
+        }
+
+        weapon.getPassives().get(passiveIndex).setDisplayName(input.trim());
+        return true;
+    }
+
+    private boolean applyPassiveDescription(WeaponSkill weapon, int passiveIndex, String input) {
+        if (passiveIndex < 0 || passiveIndex >= weapon.getPassives().size()) {
+            return false;
+        }
+
+        weapon.getPassives().get(passiveIndex).setDescription(input.trim());
+        return true;
+    }
+
+    private boolean applySkillModifierInput(Player player, WeaponSkill weapon, int slot, String input) {
+        SkillSlot skill = weapon.getSkill(slot);
+        if (skill == null) {
+            return false;
+        }
+
+        String[] split = input.split(":", 2);
+        if (split.length != 2) {
+            player.sendMessage(mm.deserialize("<red>modifier는 key:value 형식이어야 합니다.</red>"));
+            return false;
+        }
+
+        ModifierValidator.ValidationResult keyResult = ModifierValidator.validateCustomModifierKey(split[0]);
+        if (!keyResult.valid()) {
+            player.sendMessage(mm.deserialize("<red>" + keyResult.message() + "</red>"));
+            return false;
+        }
+
+        ModifierValidator.ValueResult valueResult = ModifierValidator.validateNumericValue(split[1]);
+        if (!valueResult.valid()) {
+            player.sendMessage(mm.deserialize("<red>" + valueResult.message() + "</red>"));
+            return false;
+        }
+
+        skill.putModifier(keyResult.normalizedKey(), valueResult.value());
+        plugin.logDebug("modifier 저장: " + weapon.getWeaponId() + " slot-" + slot
+                + " " + keyResult.normalizedKey() + "=" + valueResult.value());
+        return true;
+    }
+
+    private void reopen(Player player, InputCtx ctx) {
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(ctx.weaponId);
+        if (weapon == null) {
+            return;
+        }
+
+        if (ctx.slot > 0) {
+            plugin.getGUIManager().openSkillEditGUI(player, weapon, ctx.slot);
+            return;
+        }
+        if (ctx.passive >= 0) {
+            plugin.getGUIManager().openPassiveEditGUI(player, weapon, ctx.passive);
+            return;
+        }
+
+        plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
+    }
+
+    private void saveRefreshSkill(Player player, WeaponSkill weapon, int slot) {
+        plugin.getWeaponSkillManager().save(weapon);
+        plugin.getGUIManager().openSkillEditGUI(player, weapon, slot);
+        click(player);
+    }
+
+    private void saveRefreshPassive(Player player, WeaponSkill weapon, int passiveIndex) {
+        plugin.getWeaponSkillManager().save(weapon);
+        plugin.getGUIManager().openPassiveEditGUI(player, weapon, passiveIndex);
+        click(player);
+    }
+
+    private double delta(ClickType clickType, double small, double large) {
+        return switch (clickType) {
+            case LEFT -> -small;
+            case RIGHT -> small;
+            case SHIFT_LEFT -> -large;
+            case SHIFT_RIGHT -> large;
+            default -> 0;
+        };
+    }
+
+    private void click(Player player) {
+        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 0.5f, 1.0f);
+    }
+
+    private enum InputType {
+        SKILL_ID,
+        SKILL_NAME,
+        SKILL_DESC,
+        SKILL_MODIFIER,
+        PASSIVE_TYPE,
+        PASSIVE_NAME,
+        PASSIVE_DESC
+    }
+
+    private record InputCtx(InputType type, String weaponId, int slot, int passive) {
+    }
 }

@@ -8,56 +8,55 @@ import io.lumine.mythic.lib.skill.handler.MythicMobsSkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import kr.yongpyo.bsskill.BSSkill;
-import kr.yongpyo.bsskill.model.*;
+import kr.yongpyo.bsskill.model.CombatState;
+import kr.yongpyo.bsskill.model.PassiveSlot;
+import kr.yongpyo.bsskill.model.SkillSlot;
+import kr.yongpyo.bsskill.model.WeaponSkill;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
-import org.bukkit.Sound;
+import org.bukkit.configuration.MemoryConfiguration;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 전투 모드 + 스킬 캐스팅 + 패시브 TIMER 엔진
+ * 전투 모드 진입, 무기 고정, 스킬 캐스팅, 패시브 타이머까지
+ * 전투 시스템의 핵심 흐름을 관리하는 매니저입니다.
  *
- * <h3>무기 9번 슬롯 고정</h3>
- * 전투 모드 진입 시 무기를 핫바 인덱스 8(키보드 9)로 이동.
- * 해제 시 원래 위치로 복구. ItemStack 통째로 교환하므로 NBT/CMD 보존.
- *
- * <h3>좌클릭 스킬 + 몬스터 타격 동시 처리</h3>
- * <ul>
- *   <li>공기/블록 좌클릭 (PlayerInteractEvent) → 슬롯 1 스킬만</li>
- *   <li>몬스터 근접 타격 (EntityDamageByEntityEvent, ENTITY_ATTACK) → 슬롯 1 스킬 + 데미지 통과</li>
- *   <li>투사체 피격 (PROJECTILE) → 스킬 발동 안 함 (원거리 무한 시전 방지)</li>
- * </ul>
- *
- * <h3>MythicLib API 시전</h3>
- * <pre>
- *   ModifiableSkill.registerModifier(key, double)
- *   skill.cast(new TriggerMetadata(pd, TriggerType.API, (Entity) null))
- * </pre>
+ * 스킬 발동 조건 검증과 캐스팅 결과 처리를 메서드 단위로 분리하여
+ * 리스너에서는 "무슨 입력이 들어왔는가"에만 집중할 수 있도록 구성합니다.
  */
 public class CombatManager {
 
-    /** 무기 고정 슬롯 — 핫바 인덱스 8 (키보드 9) */
     public static final int WEAPON_SLOT = 8;
 
     private final BSSkill plugin;
-    private final MiniMessage mm = MiniMessage.miniMessage();
+    private final MiniMessage miniMessage = MiniMessage.miniMessage();
     private final Map<UUID, CombatState> states = new ConcurrentHashMap<>();
     private final Map<String, MythicMobsSkillHandler> handlerCache = new ConcurrentHashMap<>();
 
-    // 메시지/사운드 캐시 (빈 문자열이면 출력 안 함)
-    private String msgCombatOn, msgCombatOff, msgNoWeapon, msgWeaponLost;
-    private String msgCooldown, msgSkillCast, msgNoSkill, msgCastFailed, msgReturnWeapon;
-    private String sndCombatOn, sndCombatOff, sndSkillCast, sndCooldownDeny, sndReturnWeapon;
+    private String msgCombatOn;
+    private String msgCombatOff;
+    private String msgNoWeapon;
+    private String msgWeaponLost;
+    private String msgCooldown;
+    private String msgSkillCast;
+    private String msgNoSkill;
+    private String msgCastFailed;
+    private String msgReturnWeapon;
+
+    private String sndCombatOn;
+    private String sndCombatOff;
+    private String sndSkillCast;
+    private String sndCooldownDeny;
+    private String sndReturnWeapon;
 
     public CombatManager(BSSkill plugin) {
         this.plugin = plugin;
@@ -65,116 +64,116 @@ public class CombatManager {
     }
 
     public void reloadMessages() {
-        var c = plugin.getConfig();
-        msgCombatOn     = c.getString("messages.combat-on", "");
-        msgCombatOff    = c.getString("messages.combat-off", "");
-        msgNoWeapon     = c.getString("messages.no-weapon", "");
-        msgWeaponLost   = c.getString("messages.weapon-lost", "");
-        msgCooldown     = c.getString("messages.cooldown", "");
-        msgSkillCast    = c.getString("messages.skill-cast", "");
-        msgNoSkill      = c.getString("messages.no-skill", "");
-        msgCastFailed   = c.getString("messages.cast-failed", "");
-        msgReturnWeapon = c.getString("messages.return-weapon", "");
-        sndCombatOn     = c.getString("sounds.combat-on", "");
-        sndCombatOff    = c.getString("sounds.combat-off", "");
-        sndSkillCast    = c.getString("sounds.skill-cast", "");
-        sndCooldownDeny = c.getString("sounds.cooldown-deny", "");
-        sndReturnWeapon = c.getString("sounds.return-weapon", "");
-    }
+        // 메시지/사운드는 리로드 시 즉시 반영될 수 있도록 한곳에서 다시 읽어옵니다.
+        var config = plugin.getConfig();
+        msgCombatOn = config.getString("messages.combat-on", "");
+        msgCombatOff = config.getString("messages.combat-off", "");
+        msgNoWeapon = config.getString("messages.no-weapon", "");
+        msgWeaponLost = config.getString("messages.weapon-lost", "");
+        msgCooldown = config.getString("messages.cooldown", "");
+        msgSkillCast = config.getString("messages.skill-cast", "");
+        msgNoSkill = config.getString("messages.no-skill", "");
+        msgCastFailed = config.getString("messages.cast-failed", "");
+        msgReturnWeapon = config.getString("messages.return-weapon", "");
 
-    // ===================================================================
-    // 핸들러 캐시
-    // ===================================================================
+        sndCombatOn = config.getString("sounds.combat-on", "");
+        sndCombatOff = config.getString("sounds.combat-off", "");
+        sndSkillCast = config.getString("sounds.skill-cast", "");
+        sndCooldownDeny = config.getString("sounds.cooldown-deny", "");
+        sndReturnWeapon = config.getString("sounds.return-weapon", "");
+    }
 
     public void warmUpHandlerCache() {
+        // 서버 시작 또는 리로드 직후 자주 쓰일 핸들러를 미리 캐싱해 첫 발동 지연을 줄입니다.
         handlerCache.clear();
-        for (WeaponSkill w : plugin.getWeaponSkillManager().getAllWeapons()) {
-            for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
-                SkillSlot s = w.getSkill(i);
-                if (s.isValid()) getOrCreateHandler(s.getMythicId());
+
+        for (WeaponSkill weapon : plugin.getWeaponSkillManager().getAllWeapons()) {
+            for (int slot = 1; slot <= WeaponSkill.MAX_SLOTS; slot++) {
+                SkillSlot skill = weapon.getSkill(slot);
+                if (skill != null && skill.isValid()) {
+                    getOrCreateHandler(skill.getMythicId());
+                }
             }
-            for (PassiveSlot p : w.getPassives())
-                if (p.isValid()) getOrCreateHandler(p.getType());
+
+            for (PassiveSlot passive : weapon.getPassives()) {
+                if (passive.isValid()) {
+                    getOrCreateHandler(passive.getType());
+                }
+            }
         }
-        plugin.getLogger().info("[CombatManager] 핸들러 " + handlerCache.size() + "개 캐싱");
     }
 
-    private MythicMobsSkillHandler getOrCreateHandler(String name) {
-        return handlerCache.computeIfAbsent(name, n -> {
-            var reg = MythicLib.plugin.getSkills().getHandler(n);
-            if (reg instanceof MythicMobsSkillHandler h) return h;
-            return new MythicMobsSkillHandler(new org.bukkit.configuration.MemoryConfiguration(), n);
+    private MythicMobsSkillHandler getOrCreateHandler(String skillName) {
+        return handlerCache.computeIfAbsent(skillName, key -> {
+            // 등록된 핸들러가 있으면 그대로 쓰고, 없으면 MythicLib가 처리 가능한 형태로 래핑합니다.
+            var registered = MythicLib.plugin.getSkills().getHandler(key);
+            if (registered instanceof MythicMobsSkillHandler handler) {
+                return handler;
+            }
+
+            return new MythicMobsSkillHandler(new MemoryConfiguration(), key);
         });
     }
 
-    // ===================================================================
-    // 상태 조회
-    // ===================================================================
-
     public CombatState getState(Player player) {
-        return states.computeIfAbsent(player.getUniqueId(), CombatState::new);
+        return states.computeIfAbsent(player.getUniqueId(), ignored -> new CombatState());
     }
-
-    public void removeState(UUID uuid) { states.remove(uuid); }
-
-    public boolean isInCombatMode(Player player) {
-        CombatState s = states.get(player.getUniqueId());
-        return s != null && s.isCombatMode();
-    }
-
-    public WeaponSkill getCurrentWeapon(Player player) {
-        CombatState s = states.get(player.getUniqueId());
-        if (s == null || !s.isCombatMode() || s.getCurrentWeaponId() == null) return null;
-        return plugin.getWeaponSkillManager().getWeapon(s.getCurrentWeaponId());
-    }
-
-    /** 플레이어가 현재 무기 슬롯(8)을 들고 있는지 */
-    public boolean isHoldingWeapon(Player player) {
-        CombatState s = states.get(player.getUniqueId());
-        if (s == null || !s.isCombatMode()) return false;
-        return s.isHoldingWeapon(player.getInventory().getHeldItemSlot());
-    }
-
-    // ===================================================================
-    // F키 핸들러
-    // ===================================================================
 
     /**
-     * @return true이면 이벤트 취소
+     * 조회만 필요할 때는 상태 객체를 새로 만들지 않고 현재 존재하는 값만 반환합니다.
+     * Placeholder/HUD 같은 읽기 전용 경로에서 불필요한 상태 생성을 막는 용도입니다.
      */
+    public CombatState getExistingState(Player player) {
+        return states.get(player.getUniqueId());
+    }
+
+    public void removeState(UUID uuid) {
+        states.remove(uuid);
+    }
+
+    public boolean isInCombatMode(Player player) {
+        CombatState state = states.get(player.getUniqueId());
+        return state != null && state.isCombatMode();
+    }
+
     public boolean handleFKey(Player player) {
         CombatState state = getState(player);
-        if (!state.isCombatMode()) return tryEnableCombat(player, state);
+
+        if (!state.isCombatMode()) {
+            // 전투 모드가 아닐 때 F 키는 전투 모드 진입 시도로 사용합니다.
+            return tryEnableCombat(player, state);
+        }
+
         if (state.isHoldingWeapon(player.getInventory().getHeldItemSlot())) {
+            // 이미 전투 무기를 들고 있으면 같은 키로 전투 모드를 종료합니다.
             disableCombatMode(player, state);
             return true;
         }
-        // 다른 슬롯에서 F → 무기(9번) 복귀
+
+        // 전투 중 다른 슬롯으로 잠시 빠졌다면 무기 슬롯으로 강제로 복귀시킵니다.
         player.getInventory().setHeldItemSlot(WEAPON_SLOT);
         sendMsg(player, msgReturnWeapon);
         playSound(player, sndReturnWeapon);
         return true;
     }
 
-    // ===================================================================
-    // 전투 모드 진입/해제
-    // ===================================================================
-
     private boolean tryEnableCombat(Player player, CombatState state) {
-        String wId = detectWeaponId(player);
-        if (wId == null || !plugin.getWeaponSkillManager().hasWeapon(wId)) return false;
+        String weaponId = detectWeaponId(player);
+        if (weaponId == null || !plugin.getWeaponSkillManager().hasWeapon(weaponId)) {
+            return false;
+        }
 
-        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(wId);
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(weaponId);
+        if (weapon == null) {
+            return false;
+        }
 
-        // 무기를 핫바 9번(인덱스 8)으로 이동
+        // 전투 모드 진입 시 무기를 8번 슬롯으로 고정하고, 전투 중 필요한 런타임 상태를 초기화합니다.
         ensureWeaponAtSlot8(player, state);
-
         state.setCombatMode(true);
-        state.setCurrentWeaponId(wId);
+        state.setCurrentWeaponId(weaponId);
         state.setWeaponSlot(WEAPON_SLOT);
         state.clearAllCooldowns();
-
-        // 패시브 타이머 시작
         startPassiveTimers(player, state, weapon);
 
         sendMsg(player, msgCombatOn.replace("{weapon}", weapon.getDisplayName()));
@@ -190,234 +189,302 @@ public class CombatManager {
     }
 
     public void forceDisable(Player player) {
-        CombatState s = states.get(player.getUniqueId());
-        if (s == null || !s.isCombatMode()) return;
-        restoreSlot(player, s);
-        s.reset();
+        CombatState state = states.get(player.getUniqueId());
+        if (state == null || !state.isCombatMode()) {
+            return;
+        }
+
+        restoreSlot(player, state);
+        state.reset();
     }
 
-    // ===================================================================
-    // 무기 9번 슬롯 고정
-    // ===================================================================
-
     private void ensureWeaponAtSlot8(Player player, CombatState state) {
-        PlayerInventory inv = player.getInventory();
-        int currentSlot = inv.getHeldItemSlot();
+        PlayerInventory inventory = player.getInventory();
+        int currentSlot = inventory.getHeldItemSlot();
 
         if (currentSlot == WEAPON_SLOT) {
             state.setSwapped(false);
             return;
         }
 
-        // 현재 슬롯 <-> 8번 슬롯 교환 (NBT/CMD 보존)
-        ItemStack weaponItem = inv.getItem(currentSlot);
-        ItemStack slot8Item = inv.getItem(WEAPON_SLOT);
-        inv.setItem(WEAPON_SLOT, weaponItem);
-        inv.setItem(currentSlot, slot8Item);
-        inv.setHeldItemSlot(WEAPON_SLOT);
+        // 전투 중에는 무기 슬롯을 고정해 입력 체계를 단순화합니다.
+        // 원래 슬롯 정보는 종료 시 되돌리기 위해 상태 객체에 보관합니다.
+        ItemStack weaponItem = inventory.getItem(currentSlot);
+        ItemStack slot8Item = inventory.getItem(WEAPON_SLOT);
+
+        inventory.setItem(WEAPON_SLOT, weaponItem);
+        inventory.setItem(currentSlot, slot8Item);
+        inventory.setHeldItemSlot(WEAPON_SLOT);
 
         state.setOriginalSlot(currentSlot);
         state.setSwapped(true);
     }
 
     private void restoreSlot(Player player, CombatState state) {
-        if (!state.isSwapped() || !player.isOnline()) return;
-
-        PlayerInventory inv = player.getInventory();
-        int original = state.getOriginalSlot();
-
-        if (original >= 0 && original <= 7) {
-            ItemStack weaponItem = inv.getItem(WEAPON_SLOT);
-            ItemStack originalItem = inv.getItem(original);
-            inv.setItem(original, weaponItem);
-            inv.setItem(WEAPON_SLOT, originalItem);
-            inv.setHeldItemSlot(original);
+        if (!state.isSwapped() || !player.isOnline()) {
+            return;
         }
 
-        state.setSwapped(false);
-        state.setOriginalSlot(-1);
-    }
+        PlayerInventory inventory = player.getInventory();
+        int originalSlot = state.getOriginalSlot();
+        if (originalSlot < 0 || originalSlot > 7) {
+            state.setSwapped(false);
+            return;
+        }
 
-    // ===================================================================
-    // 패시브 TIMER
-    // ===================================================================
+        // 전투 시작 전에 들고 있던 슬롯 구성을 복구해 사용감이 어색하지 않도록 합니다.
+        ItemStack weaponItem = inventory.getItem(WEAPON_SLOT);
+        ItemStack originalItem = inventory.getItem(originalSlot);
+
+        inventory.setItem(originalSlot, weaponItem);
+        inventory.setItem(WEAPON_SLOT, originalItem);
+        inventory.setHeldItemSlot(originalSlot);
+        state.setSwapped(false);
+    }
 
     private void startPassiveTimers(Player player, CombatState state, WeaponSkill weapon) {
         for (PassiveSlot passive : weapon.getPassives()) {
-            if (!passive.isValid()) continue;
-            long ticks = (long) (passive.getTimer() * 20);
+            if (!passive.isValid()) {
+                continue;
+            }
+
+            // 패시브마다 독립 타이머를 등록하되, 실제 실행 가능 여부는 매 틱 검증합니다.
+            long intervalTicks = Math.max(1L, Math.round(passive.getTimer() * 20));
             BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (!state.isCombatMode() || !player.isOnline()) return;
-                if (!state.isHoldingWeapon(player.getInventory().getHeldItemSlot())) return;
+                if (!canRunPassive(player, state)) {
+                    return;
+                }
+
                 castPassive(player, state, passive);
-            }, ticks, ticks);
+            }, intervalTicks, intervalTicks);
             state.addTimerTask(task);
         }
     }
 
-    private void castPassive(Player player, CombatState state, PassiveSlot passive) {
-        int cdKey = 100 + passive.getIndex();
-        if (passive.getCooldown() > 0 && state.isOnCooldown(cdKey)) return;
-        boolean ok = executeCast(player, passive.getType(), passive.getModifiers());
-        if (ok && passive.getCooldown() > 0) state.setCooldown(cdKey, passive.getCooldown());
+    private boolean canRunPassive(Player player, CombatState state) {
+        // 패시브는 전투 모드 유지, 온라인 상태, 전투 무기 장착이 모두 맞을 때만 실행합니다.
+        return state.isCombatMode()
+                && player.isOnline()
+                && state.isHoldingWeapon(player.getInventory().getHeldItemSlot());
     }
 
-    // ===================================================================
-    // 액티브 스킬 캐스팅
-    // ===================================================================
+    private void castPassive(Player player, CombatState state, PassiveSlot passive) {
+        int cooldownKey = 100 + passive.getIndex();
+        if (passive.getCooldown() > 0 && state.isOnCooldown(cooldownKey)) {
+            return;
+        }
 
-    /**
-     * 슬롯 번호(1~6)로 액티브 스킬 시전
-     *
-     * @param player     시전자
-     * @param slotNumber 스킬 슬롯 (1~6)
-     */
+        boolean castSucceeded = executeCast(player, state, passive.getType(), passive.getModifiers());
+        if (castSucceeded && passive.getCooldown() > 0) {
+            state.setCooldown(cooldownKey, passive.getCooldown());
+        }
+    }
+
     public void castSkill(Player player, int slotNumber) {
         CombatState state = getState(player);
-        if (!state.isCombatMode()) return;
-
-        // 동일 틱 중복 시전 방지 (좌클릭 시 Interact + DamageEvent 동시 발생 대비)
-        if (state.isDoubleCast(slotNumber)) return;
-
-        // 무기 NBT 검증
-        if (!validateWeapon(player, state)) {
-            disableCombatMode(player, state);
-            sendMsg(player, msgWeaponLost);
+        if (!state.isCombatMode()) {
             return;
         }
 
-        WeaponSkill w = plugin.getWeaponSkillManager().getWeapon(state.getCurrentWeaponId());
-        if (w == null) return;
-
-        SkillSlot skill = w.getSkill(slotNumber);
-        if (skill == null || !skill.isValid()) {
-            sendMsg(player, msgNoSkill);
+        // 슬롯 해석, 무기 검증, 스킬 유효성 검사를 먼저 모아서 실패 지점을 단순화합니다.
+        SkillSlot skill = resolveActiveSkill(player, state, slotNumber);
+        if (skill == null) {
             return;
         }
 
-        // 쿨타임 확인
+        if (!state.canTriggerSkill(slotNumber)) {
+            return;
+        }
+
         if (state.isOnCooldown(slotNumber)) {
-            double r = state.getRemainingCooldown(slotNumber);
-            sendMsg(player, msgCooldown.replace("{remaining}", String.format("%.1f", r)));
+            double remaining = state.getRemainingCooldown(slotNumber);
+            sendMsg(player, msgCooldown.replace("{remaining}", String.format("%.1f", remaining)));
             playSound(player, sndCooldownDeny);
             return;
         }
 
-        // damage 계산 + extra -> modifiers 맵 구성
-        double weaponDmg = getWeaponDamage(player);
-        Map<String, Double> mods = new java.util.LinkedHashMap<>();
-        mods.put("damage", weaponDmg * skill.getDamage());
-        for (var e : skill.getExtraParams().entrySet()) {
-            mods.put(e.getKey(), toDouble(e.getValue()));
+        // 실제 캐스팅 직전에 중복 발동 방지용 타임스탬프를 기록합니다.
+        state.markCast(slotNumber);
+
+        Map<String, Double> modifiers = buildSkillModifiers(player, skill);
+        boolean castSucceeded = executeCast(player, state, skill.getMythicId(), modifiers);
+
+        if (!castSucceeded) {
+            sendMsg(player, msgCastFailed);
+            return;
         }
 
-        boolean ok = executeCast(player, skill.getMythicId(), mods);
-        if (ok) {
-            state.markCast(slotNumber); // 중복 시전 방지 기록
-            if (skill.getCooldown() > 0) state.setCooldown(slotNumber, skill.getCooldown());
-            sendMsg(player, msgSkillCast.replace("{skill}", skill.getDisplayName()));
-            playSound(player, sndSkillCast);
-        } else {
-            sendMsg(player, msgCastFailed);
+        if (skill.getCooldown() > 0) {
+            state.setCooldown(slotNumber, skill.getCooldown());
         }
+
+        sendMsg(player, msgSkillCast.replace("{skill}", skill.getDisplayName()));
+        playSound(player, sndSkillCast);
     }
 
-    // ===================================================================
-    // MythicLib API 공통 시전
-    // ===================================================================
+    private SkillSlot resolveActiveSkill(Player player, CombatState state, int slotNumber) {
+        if (!validateWeapon(player, state)) {
+            // 전투 중 무기가 바뀌거나 사라졌다면 잘못된 상태를 끌고 가지 않고 즉시 전투를 종료합니다.
+            disableCombatMode(player, state);
+            return null;
+        }
 
-    /**
-     * MythicLib API로 스킬 시전
-     *
-     * ModifiableSkill.registerModifier(key, double) -> MythicMobs YML: <modifier.key>
-     *
-     * TriggerMetadata 생성 시 세 번째 인자는 (Entity) null로 캐스트 필요.
-     * (MythicLib JAR 바이트코드 검증: TriggerMetadata(MMOPlayerData, TriggerType, Entity))
-     */
-    private boolean executeCast(Player player, String mythicId, Map<String, Double> modifiers) {
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(state.getCurrentWeaponId());
+        if (weapon == null) {
+            sendMsg(player, msgWeaponLost);
+            return null;
+        }
+
+        SkillSlot skill = weapon.getSkill(slotNumber);
+        if (skill == null || !skill.isValid()) {
+            // 빈 슬롯은 조용히 무시해 입력 체계는 유지하고 불필요한 경고는 만들지 않습니다.
+            return null;
+        }
+
+        return skill;
+    }
+
+    private Map<String, Double> buildSkillModifiers(Player player, SkillSlot skill) {
+        // 액티브 스킬 modifier는 계산하지 않고 그대로 전달합니다.
+        // 예를 들어 damage와 ratio가 있으면 둘 다 각각 MythicLib에 전달됩니다.
+        Map<String, Double> modifiers = new LinkedHashMap<>();
+
+        for (var entry : skill.getModifiers().entrySet()) {
+            modifiers.put(entry.getKey(), entry.getValue());
+        }
+
+        return modifiers;
+    }
+
+    private boolean executeCast(Player player, CombatState state, String mythicId, Map<String, Double> modifiers) {
+        // 동일 이벤트 체인 안에서 재귀 발동하지 않도록 캐스팅 시작 직전에 내부 락을 겁니다.
+        state.setInternalCasting(true);
+
         try {
-            MMOPlayerData pd = MMOPlayerData.get(player.getUniqueId());
-            if (pd == null) return false;
+            MMOPlayerData playerData = MMOPlayerData.get(player.getUniqueId());
+            if (playerData == null) {
+                return false;
+            }
 
             MythicMobsSkillHandler handler = getOrCreateHandler(mythicId);
             ModifiableSkill skill = new ModifiableSkill(handler);
 
-            // 모디파이어 등록 — 대소문자 구분, 키 제한 없음
-            for (var e : modifiers.entrySet()) {
-                skill.registerModifier(e.getKey(), e.getValue());
+            // 설정 기반 modifier를 모두 주입한 뒤 API 트리거로 직접 스킬을 실행합니다.
+            for (var entry : modifiers.entrySet()) {
+                skill.registerModifier(entry.getKey(), entry.getValue());
             }
 
-            // (Entity) null 캐스트 필수 — 오버로드 모호성 해소
-            return skill.cast(
-                    new TriggerMetadata(pd, TriggerType.API, (Entity) null)
-            ).isSuccessful();
+            return skill.cast(new TriggerMetadata(playerData, TriggerType.API, (Entity) null)).isSuccessful();
+        } catch (Exception exception) {
+            plugin.getLogger().warning("스킬 캐스팅 실패: " + mythicId + " (" + exception.getMessage() + ")");
+            plugin.logDebug("캐스팅 예외 상세: " + mythicId, exception);
+            return false;
+        } finally {
+            // 기존에는 다음 틱까지 락을 유지해서 입력이 살짝 끊겨 보였기 때문에
+            // 동기 캐스팅 스택이 끝나는 즉시 락을 해제하여 반응성을 높입니다.
+            state.setInternalCasting(false);
+        }
+    }
 
-        } catch (Exception e) {
-            plugin.getLogger().warning("[CombatManager] 시전 실패 (" + mythicId + "): " + e.getMessage());
+    private boolean validateWeapon(Player player, CombatState state) {
+        // 전투 상태가 실제 인벤토리의 MMOITEMS_ITEM_ID와 일치하는지 매번 확인해
+        // 슬롯 이동, 드롭, 교체 등으로 생기는 불일치를 조기에 차단합니다.
+        int weaponSlot = state.getWeaponSlot();
+        if (weaponSlot < 0) {
+            return false;
+        }
+
+        ItemStack item = player.getInventory().getItem(weaponSlot);
+        if (item == null || item.getType().isAir()) {
+            return false;
+        }
+
+        try {
+            NBTItem nbtItem = NBTItem.get(item);
+            return nbtItem.hasType() && nbtItem.getString("MMOITEMS_ITEM_ID").equals(state.getCurrentWeaponId());
+        } catch (Exception exception) {
             return false;
         }
     }
 
-    // ===================================================================
-    // 유틸
-    // ===================================================================
-
-    private boolean validateWeapon(Player player, CombatState state) {
-        int ws = state.getWeaponSlot();
-        if (ws < 0) return false;
-        ItemStack item = player.getInventory().getItem(ws);
-        if (item == null || item.getType().isAir()) return false;
-        try {
-            NBTItem nbt = NBTItem.get(item);
-            if (!nbt.hasType()) return false;
-            String id = nbt.getString("MMOITEMS_ITEM_ID");
-            return id != null && id.equals(state.getCurrentWeaponId());
-        } catch (Exception e) { return false; }
-    }
-
     public String detectWeaponId(Player player) {
+        // 메인핸드 아이템의 MMOITEMS_ITEM_ID를 읽어 전투 가능 무기인지 판별합니다.
         ItemStack item = player.getInventory().getItemInMainHand();
-        if (item.getType().isAir()) return null;
+        if (item == null || item.getType().isAir()) {
+            return null;
+        }
+
         try {
-            NBTItem nbt = NBTItem.get(item);
-            if (!nbt.hasType()) return null;
-            String id = nbt.getString("MMOITEMS_ITEM_ID");
-            return (id != null && !id.isEmpty()) ? id : null;
-        } catch (Exception ignored) {}
-        return null;
+            NBTItem nbtItem = NBTItem.get(item);
+            String weaponId = nbtItem.getString("MMOITEMS_ITEM_ID");
+            return weaponId != null && !weaponId.isEmpty() ? weaponId : null;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 
     private double getWeaponDamage(Player player) {
+        // MMOPlayerData의 ATTACK_DAMAGE를 기준으로 스킬 계수를 곱할 수 있게 기본 공격력을 가져옵니다.
         try {
-            MMOPlayerData d = MMOPlayerData.get(player.getUniqueId());
-            if (d != null) return d.getStatMap().getStat("ATTACK_DAMAGE");
-        } catch (Exception ignored) {}
-        var attr = player.getAttribute(org.bukkit.attribute.Attribute.ATTACK_DAMAGE);
-        return attr != null ? attr.getValue() : 1.0;
-    }
-
-    private void sendMsg(Player p, String msg) {
-        if (msg != null && !msg.isEmpty()) p.sendMessage(mm.deserialize(msg));
-    }
-
-    private void playSound(Player p, String snd) {
-        if (snd == null || snd.isEmpty()) return;
-        try {
-            if (snd.contains(".")) {
-                p.playSound(p.getLocation(), snd, 0.8f, 1.0f);
-            } else {
-                Sound s = Registry.SOUNDS.get(NamespacedKey.minecraft(snd.toLowerCase(java.util.Locale.ROOT)));
-                if (s != null) p.playSound(p.getLocation(), s, 0.8f, 1.0f);
-                else p.playSound(p.getLocation(), snd.toLowerCase(java.util.Locale.ROOT), 0.8f, 1.0f);
+            MMOPlayerData playerData = MMOPlayerData.get(player.getUniqueId());
+            if (playerData != null) {
+                return playerData.getStatMap().getStat("ATTACK_DAMAGE");
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            return 1.0;
+        }
+
+        return 1.0;
     }
 
-    private double toDouble(Object v) {
-        if (v instanceof Number n) return n.doubleValue();
-        if (v instanceof String s) {
-            try { return Double.parseDouble(s); } catch (NumberFormatException ignored) {}
+    private void sendMsg(Player player, String message) {
+        if (message != null && !message.isEmpty()) {
+            player.sendMessage(miniMessage.deserialize(message));
         }
-        return 0.0;
+    }
+
+    private void playSound(Player player, String soundKey) {
+        if (soundKey == null || soundKey.isEmpty()) {
+            return;
+        }
+
+        try {
+            player.playSound(player.getLocation(), soundKey, 0.8f, 1.0f);
+        } catch (Exception ignored) {
+        }
+    }
+
+    private double toDouble(Object value) {
+        if (value instanceof Number number) {
+            return number.doubleValue();
+        }
+
+        try {
+            return Double.parseDouble(String.valueOf(value));
+        } catch (Exception exception) {
+            return 0.0;
+        }
+    }
+
+    public WeaponSkill getCurrentWeapon(Player player) {
+        // Placeholder나 HUD에서 현재 전투 무기 정보를 조회할 때 사용하는 진입점입니다.
+        CombatState state = states.get(player.getUniqueId());
+        if (state == null || !state.isCombatMode() || state.getCurrentWeaponId() == null) {
+            return null;
+        }
+
+        return plugin.getWeaponSkillManager().getWeapon(state.getCurrentWeaponId());
+    }
+
+    public boolean isHoldingWeapon(Player player) {
+        // 현재 들고 있는 슬롯이 전투용 고정 슬롯인지 빠르게 판별합니다.
+        CombatState state = states.get(player.getUniqueId());
+        return state != null
+                && state.isCombatMode()
+                && player.getInventory().getHeldItemSlot() == WEAPON_SLOT;
+    }
+
+    public boolean isHoldingWeapon(int slot) {
+        return slot == WEAPON_SLOT;
     }
 }

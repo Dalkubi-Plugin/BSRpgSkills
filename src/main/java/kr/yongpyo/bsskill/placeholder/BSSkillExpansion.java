@@ -20,7 +20,18 @@ public class BSSkillExpansion extends PlaceholderExpansion {
     public @Nullable String onPlaceholderRequest(Player player, @NotNull String params) {
         if (player == null) return "";
         var combat = plugin.getCombatManager();
-        var state = combat.getState(player);
+        var state = combat.getExistingState(player);
+        if (state == null) {
+            return switch (params) {
+                case "combat_mode" -> "false";
+                case "weapon_name", "weapon_id" -> "";
+                case "active_count" -> "0";
+                default -> {
+                    if (params.startsWith("slot_")) yield "";
+                    yield null;
+                }
+            };
+        }
 
         return switch (params) {
             case "combat_mode" -> String.valueOf(state.isCombatMode());

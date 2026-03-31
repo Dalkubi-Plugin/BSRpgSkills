@@ -1,83 +1,112 @@
 # ========================================
-#  AWAKENED_MARTIAL_ARTIST_TIGERFIST
+#  AWAKENED_MAGE_RUNESTAFF
 #  파일명 = MMOITEMS_ITEM_ID
 # ========================================
 
-# MMOItems 타입 (GUI에서 실제 아이템 렌더링에 사용)
 mmo-type: SWORD
+display-name: "<#7dd3fc>룬메이지의 지팡이</#7dd3fc>"
 
-display-name: "<#e1ff8f>비전의 룬 지팡이"
-
-# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: SORCERY_COMBO
-    display-name: "<gradient:#fff9ae:#f8e246>원초의 마법 연격</gradient>"
-    cooldown: 0.3
-    damage: 3
-    icon: STICK
-    custom-model-data: 0
-    description: "화염구와 빙결 파편, 낙뢰로 이어지는 원소의 연쇄 공격을 펼칩니다. 3타 시전 시 후방으로 도약하며 적을 둔화시키는 빙결 산탄을 발사합니다."
     enabled: true
+    timing:
+      cooldown: 0.3
+    display:
+      name: "<gradient:#fff9ae:#f8e246>비전 마력 연격</gradient>"
+      description: "냉기와 화염을 엮어내는 연속 마탄을 발사합니다. 마지막 타격은 적을 띄워 올립니다."
+      icon: STICK
+      custom-model-data: 0
+    modifiers:
+      damage: 3
+      ratio: 1.0
 
   slot-2:
     mythic-id: TELEPORT_STRIKE
-    display-name: "<gradient:#b5eeff:#4facfe>메아리의 발걸음</gradient>"
-    cooldown: 2
-    damage: 0
-    icon: FEATHER
-    custom-model-data: 0
-    description: "뇌전의 에너지를 두르고 전방으로 순간 이동합니다. 도착 지점에서 강력한 전격 폭발을 일으켜 주변의 적들을 기절시킵니다."
     enabled: true
+    timing:
+      cooldown: 2
+    display:
+      name: "<gradient:#b5eeff:#4facfe>순간이동 강타</gradient>"
+      description: "짧은 거리로 순간이동한 뒤 착지 지점에 강력한 폭발을 일으킵니다."
+      icon: FEATHER
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      blink_distance: 6
 
   slot-3:
     mythic-id: BLAZING_BARRAGE
-    display-name: "<gradient:#ffcc33:#ffb347>제의의 화염 포격</gradient>"
-    cooldown: 3
-    damage: 3
-    icon: OAK_FENCE
-    custom-model-data: 0
-    description: "등 뒤에 6개의 마법진을 생성하여 연쇄적인 화염구를 퍼붓습니다. 마지막으로 거대한 화염구를 응축하여 전방에 부채꼴 형태로 방출합니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#ffcc33:#ffb347>화염 연쇄 포격</gradient>"
+      description: "전방에 연속 폭발을 일으킨 뒤 거대한 화염구를 쏘아 마무리합니다."
+      icon: BLAZE_ROD
+      custom-model-data: 0
+    modifiers:
+      damage: 3
+      ratio: 1.0
+      barrage_count: 6
 
   slot-4:
     mythic-id: CRYO_PRISON
-    display-name: "<gradient:#91f48f:#38a333>대지의 빙결 감옥</gradient>"
-    cooldown: 3
-    damage: 0
-    icon: DIRT
-    custom-model-data: 0
-    description: "지면에 거대한 얼음 수정을 생성하여 적을 빙결시키고 가둡니다. 수정이 파괴될 때 주변 적들에게 치명적인 냉기 피해를 추가로 입힙니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#91f48f:#38a333>빙결 감옥</gradient>"
+      description: "적을 얼음 감옥에 가두고 추가 냉기 피해를 누적시킵니다."
+      icon: ICE
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      duration: 3
 
   slot-5:
     mythic-id: HAILPIERCER
-    display-name: "<gradient:#ff7e5f:#feb47b>선조의 빙결 가시</gradient>"
-    cooldown: 7
-    damage: 7
-    icon: WITHER_SKELETON_SKULL
-    custom-model-data: 0
-    description: "전방의 냉기 오라를 흡수하여 적들을 끌어당깁니다. 이후 지면에서 솟구치는 3개의 거대한 얼음 창으로 적을 꿰뚫고 둔화시킵니다."
     enabled: true
+    timing:
+      cooldown: 7
+    display:
+      name: "<gradient:#ff7e5f:#feb47b>서리 창 관통</gradient>"
+      description: "적을 꿰뚫는 거대한 냉기 창을 발사하고 뒤에 남은 파편이 다시 터집니다."
+      icon: TRIDENT
+      custom-model-data: 0
+    modifiers:
+      damage: 7
+      ratio: 1.0
+      shard_count: 3
 
   slot-6:
     mythic-id: METEOR_OF_DOOM
-    display-name: "<gradient:#da22ff:#9733ee>파멸의 유성</gradient>"
-    cooldown: 2
-    damage: 0
-    icon: CLOCK
-    custom-model-data: 0
-    description: "공중으로 부상하여 거대한 파멸의 유성을 소환합니다. 유성이 지면에 충돌하면 십자 형태의 거대한 지면 균열과 함께 모든 것을 불태워 버립니다."
     enabled: true
+    timing:
+      cooldown: 2
+    display:
+      name: "<gradient:#da22ff:#9733ee>파멸의 유성</gradient>"
+      description: "공중에 유성을 소환해 광역 화염 피해를 남깁니다."
+      icon: FIRE_CHARGE
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      radius: 4
 
-# ── 패시브 (MANA_BARRIER) ──
 passives:
-  passive1:
+  passive-1:
     type: MANA_BARRIER
-    display-name: "<gradient:#ffffff:#e1ff8f>영혼의 마나 장벽</gradient>"
-    timer: 1
-    cooldown: 0
-    icon: ENDER_EYE
-    custom-model-data: 0
-    description: "7초마다 영적인 마나 보호막을 생성하여 적의 다음 공격을 확정적으로 1회 방어합니다."
     enabled: true
+    timing:
+      interval: 1
+      cooldown: 0
+    display:
+      name: "<gradient:#ffffff:#e1ff8f>마나 보호막</gradient>"
+      description: "주기적으로 보호막을 재정비하여 다음 공격 한 번을 막아냅니다."
+      icon: ENDER_EYE
+      custom-model-data: 0
+    modifiers:
+      barriercooldown: 7

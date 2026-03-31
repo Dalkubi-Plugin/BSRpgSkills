@@ -3,81 +3,110 @@
 #  파일명 = MMOITEMS_ITEM_ID
 # ========================================
 
-# MMOItems 타입 (GUI에서 실제 아이템 렌더링에 사용)
 mmo-type: SWORD
+display-name: "<#00ff2a>질풍의 갈레보우</#00ff2a>"
 
-display-name: "<#00ff2a>질풍노도의 활"
-
-# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: BLASTING_COMBO
-    display-name: "<gradient:#FFD700:#FF8C00>폭발의 연격</gradient>"
-    cooldown: 0.3
-    damage: 5
-    icon: BLAZE_POWDER
-    custom-model-data: 0
-    description: "이동 방향으로 구르며 화살을 연사합니다. 4타 시전 시 공중으로 도약하여 지면에 거대한 균열을 일으키는 충전 사격을 가합니다."
     enabled: true
+    timing:
+      cooldown: 0.3
+    display:
+      name: "<gradient:#FFD700:#FF8C00>폭발의 연격</gradient>"
+      description: "이동 방향으로 구르며 화살을 연사합니다. 4타 시전 시 공중으로 도약하여 지면에 거대한 균열을 일으키는 충전 사격을 가합니다."
+      icon: BLAZE_POWDER
+      custom-model-data: 0
+    modifiers:
+      damage: 5
+      ratio: 1.0
 
   slot-2:
     mythic-id: EVASIVE_SHOT
-    display-name: "<gradient:#00FFFF:#0080FF>질풍의 회피 사격</gradient>"
-    cooldown: 2
-    damage: 5
-    icon: SPECTRAL_ARROW
-    custom-model-data: 0
-    description: "후방 상공으로 뛰어오르며 분열하는 화살을 3회 연속으로 발사하여 적의 접근을 차단합니다."
     enabled: true
+    timing:
+      cooldown: 2
+    display:
+      name: "<gradient:#00FFFF:#0080FF>질풍의 회피 사격</gradient>"
+      description: "후방 도약과 함께 분열하는 화살 3발을 발사하여 적의 접근을 차단합니다."
+      icon: SPECTRAL_ARROW
+      custom-model-data: 0
+    modifiers:
+      damage: 5
+      ratio: 1.0
+      projectile_count: 3
 
   slot-3:
     mythic-id: VOLLEY_OF_ARROWS
-    display-name: "<gradient:#FFA500:#FF4500>화살 비: 일제 사격</gradient>"
-    cooldown: 3
-    damage: 5
-    icon: ARROW
-    custom-model-data: 0
-    description: "전방에 부채꼴로 화살을 퍼부어 적을 밀쳐낸 뒤, 지면을 파쇄하고 적을 기절시키는 강력한 집중 사격을 가합니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#FFA500:#FF4500>화살비 제압 사격</gradient>"
+      description: "부채꼴로 화살을 퍼붓고 지면을 뒤덮어 적을 밀어내는 광역 사격을 가합니다."
+      icon: ARROW
+      custom-model-data: 0
+    modifiers:
+      damage: 5
+      ratio: 1.0
+      radius: 3
 
   slot-4:
     mythic-id: RAPID_ARROWS
-    display-name: "<gradient:#FF4D4D:#8B0000>섬광의 속사</gradient>"
-    cooldown: 3
-    damage: 5
-    icon: BOW
-    custom-model-data: 0
-    description: "순식간에 5발의 화살을 발사한 후, 잠시 숨을 고르고 적을 관통하는 강력한 화살 3발을 연사합니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#FF4D4D:#8B0000>섬광의 속사</gradient>"
+      description: "순식간에 5발의 화살을 발사한 후, 잠시 숨을 고르고 적을 관통하는 강력한 화살 3발을 연사합니다."
+      icon: BOW
+      custom-model-data: 0
+    modifiers:
+      damage: 5
+      ratio: 1.0
+      rapid_count: 5
+      finisher_count: 3
 
   slot-5:
     mythic-id: SHOT_OF_DESTRUCTION
-    display-name: "<gradient:#FF0000:#4B0000>종말의 파괴격</gradient>"
-    cooldown: 7
-    damage: 40
-    icon: TNT
-    custom-model-data: 0
-    description: "화살 끝에 모든 에너지를 응축하여 경로상의 모든 것을 파괴하는 초강력 파괴 화살을 발사합니다."
     enabled: true
+    timing:
+      cooldown: 7
+    display:
+      name: "<gradient:#FF0000:#4B0000>종말의 파괴격</gradient>"
+      description: "화살 하나에 모든 에너지를 집중해 경로상의 모든 것을 꿰뚫는 초강력 관통 화살을 발사합니다."
+      icon: TNT
+      custom-model-data: 0
+    modifiers:
+      damage: 40
+      ratio: 1.0
+      pierce: 10
 
   slot-6:
     mythic-id: PIERCING_SKYFALL
-    display-name: "<gradient:#E0B0FF:#800080>천공의 관통격</gradient>"
-    cooldown: 3
-    damage: 6
-    icon: TRIDENT
-    custom-model-data: 0
-    description: "하늘을 향해 쏘아 올린 수많은 화살이 직선상으로 쏟아져 내리며 모든 적을 관통합니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#E0B0FF:#800080>천공 관통격</gradient>"
+      description: "하늘 높이 뛰어올라 직선으로 떨어지며 모든 적을 관통합니다."
+      icon: TRIDENT
+      custom-model-data: 0
+    modifiers:
+      damage: 6
+      ratio: 1.0
+      fall_radius: 2.5
 
-# ── 패시브 (AMBUSH) ──
 passives:
-  passive1:
+  passive-1:
     type: AMBUSH
-    display-name: "<gradient:#ffffff:#00ff2a>매복의 일격</gradient>"
-    timer: 10
-    cooldown: 0
-    icon: ENDER_EYE
-    custom-model-data: 0
-    description: "새로운 적을 처음 타격할 때 집중력이 발휘되어 50%의 추가 피해를 입힙니다."
     enabled: true
+    timing:
+      interval: 10
+      cooldown: 0
+    display:
+      name: "<gradient:#ffffff:#00ff2a>매복의 일격</gradient>"
+      description: "전투를 시작하는 첫 공격을 강화해 더 큰 피해를 가합니다."
+      icon: ENDER_EYE
+      custom-model-data: 0
+    modifiers: {}

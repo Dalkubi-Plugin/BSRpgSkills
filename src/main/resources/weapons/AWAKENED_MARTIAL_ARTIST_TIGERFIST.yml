@@ -1,83 +1,111 @@
 # ========================================
-#  AWAKENED_MARTIAL_LIFESCEPTER
+#  AWAKENED_MARTIAL_ARTIST_TIGERFIST
 #  파일명 = MMOITEMS_ITEM_ID
 # ========================================
 
-# MMOItems 타입 (GUI에서 실제 아이템 렌더링에 사용)
 mmo-type: SWORD
+display-name: "<#fca5a5>맹호의 권갑</#fca5a5>"
 
-display-name: "<#e1ff8f>맹호의 권갑"
-
-# ── 액티브 스킬 (6슬롯) ──
 skills:
   slot-1:
     mythic-id: MARTIAL_COMBO
-    display-name: "<gradient:#fff9ae:#f8e246>원초의 권격</gradient>"
-    cooldown: 0.3
-    damage: 3
-    icon: STICK
-    custom-model-data: 0
-    description: "좌우 연격과 승룡권으로 이어지는 연속 타격을 가합니다. 4타 시전 시 기를 모아 돌진하며 적을 타격하고 짧은 시간 기절시킵니다."
     enabled: true
+    timing:
+      cooldown: 0.3
+    display:
+      name: "<gradient:#fff9ae:#f8e246>맹호 연권</gradient>"
+      description: "좌우 연타 후 강력한 마무리 일격으로 적을 밀어냅니다."
+      icon: STICK
+      custom-model-data: 0
+    modifiers:
+      damage: 3
+      ratio: 1.0
 
   slot-2:
     mythic-id: GROUND_BLOW
-    display-name: "<gradient:#b5eeff:#4facfe>지면의 강타</gradient>"
-    cooldown: 2
-    damage: 0
-    icon: FEATHER
-    custom-model-data: 0
-    description: "전방으로 질주하며 모든 적을 붙잡습니다. 질주 끝에 도약하여 붙잡은 적들을 지면에 내리쳐 강력한 기절 효과를 부여합니다."
     enabled: true
+    timing:
+      cooldown: 2
+    display:
+      name: "<gradient:#b5eeff:#4facfe>지면 강타</gradient>"
+      description: "땅을 내려쳐 주변 적을 끌어당기고 기절시킵니다."
+      icon: FEATHER
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      stun_duration: 1.5
 
   slot-3:
     mythic-id: MULTISTRIKE_UPPERCUT
-    display-name: "<gradient:#ffcc33:#ffb347>선조의 승룡권</gradient>"
-    cooldown: 3
-    damage: 3
-    icon: OAK_FENCE
-    custom-model-data: 0
-    description: "전방을 향해 5회 연속으로 타격한 후, 공중으로 높이 뛰어오르는 승룡권을 시전하여 적을 공중에 띄워 올립니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#ffcc33:#ffb347>연속 승룡권</gradient>"
+      description: "연속 타격 후 공중으로 띄워 올리는 강력한 마무리 기술입니다."
+      icon: OAK_FENCE
+      custom-model-data: 0
+    modifiers:
+      damage: 3
+      ratio: 1.0
+      hit_count: 5
 
   slot-4:
     mythic-id: HEAVY_SHOCKWAVE
-    display-name: "<gradient:#91f48f:#38a333>중력의 충격파</gradient>"
-    cooldown: 3
-    damage: 0
-    icon: DIRT
-    custom-model-data: 0
-    description: "강력한 정권 찌르기로 적을 밀쳐낸 뒤, 대기의 에너지를 모아 방출하는 거대한 충격파로 적을 밀어내고 기절시킵니다."
     enabled: true
+    timing:
+      cooldown: 3
+    display:
+      name: "<gradient:#91f48f:#38a333>중력 충격파</gradient>"
+      description: "주먹에서 충격파를 뿜어내 적을 밀쳐내고 균열을 남깁니다."
+      icon: DIRT
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      radius: 3
 
   slot-5:
     mythic-id: SPINNING_BLOW
-    display-name: "<gradient:#ff7e5f:#feb47b>회전의 일격</gradient>"
-    cooldown: 7
-    damage: 7
-    icon: IRON_AXE
-    custom-model-data: 0
-    description: "지상에서는 적을 띄우고, 공중에서는 적을 지면으로 찍어 누르는 강력한 회전 발차기를 시전합니다."
     enabled: true
+    timing:
+      cooldown: 7
+    display:
+      name: "<gradient:#ff7e5f:#feb47b>회전 폭풍격</gradient>"
+      description: "빠른 회전으로 주변 적을 베어내고 마지막 일격으로 넘어뜨립니다."
+      icon: IRON_AXE
+      custom-model-data: 0
+    modifiers:
+      damage: 7
+      ratio: 1.0
+      spin_duration: 2
 
   slot-6:
     mythic-id: DRAGON_STRIKE
-    display-name: "<gradient:#da22ff:#9733ee>비룡의 태세</gradient>"
-    cooldown: 2
-    damage: 0
-    icon: CLOCK
-    custom-model-data: 0
-    description: "비룡의 환영과 함께 난무를 펼친 뒤, 두 마리의 영적 비룡을 소환하여 지면을 강력하게 타격하고 주변의 적을 궤멸시킵니다."
     enabled: true
+    timing:
+      cooldown: 2
+    display:
+      name: "<gradient:#da22ff:#9733ee>비룡의 자세</gradient>"
+      description: "자세를 바꾸며 짧은 강화 상태에 들어가 다음 스킬을 강화합니다."
+      icon: CLOCK
+      custom-model-data: 0
+    modifiers:
+      damage: 0
+      ratio: 1.0
+      stance_duration: 4
 
-# ── 패시브 (AGILE_STRIKER) ──
 passives:
-  passive1:
+  passive-1:
     type: AGILE_STRIKER
-    display-name: "<gradient:#ffffff:#e1ff8f>신속의 타격가</gradient>"
-    timer: 1
-    cooldown: 0
-    icon: ENDER_EYE
-    custom-model-data: 0
-    description: "질주 중 몸을 숙여 전방으로 신속하고 길게 대시하는 기술을 상시 사용할 수 있게 됩니다."
     enabled: true
+    timing:
+      interval: 1
+      cooldown: 0
+    display:
+      name: "<gradient:#ffffff:#e1ff8f>민첩한 타격</gradient>"
+      description: "전투 중 이동성과 연속 공격 성능을 강화합니다."
+      icon: ENDER_EYE
+      custom-model-data: 0
+    modifiers: {}
