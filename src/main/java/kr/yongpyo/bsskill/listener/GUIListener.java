@@ -101,7 +101,7 @@ public class GUIListener implements Listener {
     private void handleWeaponDetail(Player player, WeaponDetailHolder holder, InventoryClickEvent event) {
         int slot = event.getSlot();
 
-        if (slot == 45) {
+        if (slot == 49) {
             plugin.getGUIManager().openWeaponListGUI(player);
             click(player);
             return;
@@ -155,30 +155,37 @@ public class GUIListener implements Listener {
                 prompt(player, "표시 이름 (MiniMessage 가능)");
             }
             case 14 -> {
-                double delta = delta(clickType, 1, 5);
-                if (delta != 0) {
-                    skill.setDamage(skill.getDamage() + delta);
-                    saveRefreshSkill(player, weapon, holder.getSlotNumber());
-                }
-            }
-            case 15 -> {
                 double delta = delta(clickType, 0.5, 5);
                 if (delta != 0) {
                     skill.setCooldown(skill.getCooldown() + delta);
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
-            case 16 -> {
+            case 15 -> {
                 player.closeInventory();
                 startInput(player, InputType.SKILL_DESC, holder.getWeaponId(), holder.getSlotNumber(), -1);
                 prompt(player, "스킬 설명");
             }
-            case 25 -> {
+            case 28 -> {
+                double delta = delta(clickType, 1, 5);
+                if (delta != 0) {
+                    skill.setDamage(skill.getDamage() + delta);
+                    saveRefreshSkill(player, weapon, holder.getSlotNumber());
+                }
+            }
+            case 29 -> {
+                double delta = delta(clickType, 0.1, 1.0);
+                if (delta != 0) {
+                    skill.setRatio(skill.getRatio() + delta);
+                    saveRefreshSkill(player, weapon, holder.getSlotNumber());
+                }
+            }
+            case 34 -> {
                 player.closeInventory();
                 startInput(player, InputType.SKILL_MODIFIER, holder.getWeaponId(), holder.getSlotNumber(), -1);
                 prompt(player, "modifier를 key:value 형식으로 입력");
             }
-            case 27 -> {
+            case 36 -> {
                 plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
                 click(player);
             }
@@ -241,7 +248,7 @@ public class GUIListener implements Listener {
                 startInput(player, InputType.PASSIVE_DESC, holder.getWeaponId(), -1, holder.getPassiveIndex());
                 prompt(player, "패시브 설명");
             }
-            case 27 -> {
+            case 36 -> {
                 plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
                 click(player);
             }

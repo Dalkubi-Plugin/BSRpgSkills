@@ -1,5 +1,5 @@
 name: BSSkill
-version: '4.0.0'
+version: '4.0.3'
 main: kr.yongpyo.bsskill.BSSkill
 api-version: '1.21'
 description: 'MMOItems 무기 기반 6슬롯 스킬 + 패시브 시스템'
