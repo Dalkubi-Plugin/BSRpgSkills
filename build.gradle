@@ -8,14 +8,12 @@ java { toolchain { languageVersion = JavaLanguageVersion.of(21) } }
 repositories {
     mavenCentral()
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
-    maven { url = 'https://repo.jorel.dev/releases/' }
     maven { url = 'https://nexus.phoenixdevt.fr/repository/maven-public/' }
     maven { url = 'https://mvn.lumine.io/repository/maven-public/' }
     maven { url = 'https://repo.extendedclip.com/releases/' }
 }
 dependencies {
     compileOnly 'io.papermc.paper:paper-api:1.21.8-R0.1-SNAPSHOT'
-    compileOnly 'dev.jorel:commandapi-paper-core:11.1.0'
     compileOnly 'net.Indyuce:MMOItems-API:6.10.1-SNAPSHOT'
     compileOnly 'io.lumine:MythicLib-dist:1.7.1-SNAPSHOT'
     compileOnly 'io.lumine:Mythic-Dist:5.7.1'
