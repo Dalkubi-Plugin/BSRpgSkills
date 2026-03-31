@@ -25,6 +25,15 @@ public class CombatState {
     private final Map<Integer, Long> cooldowns = new HashMap<>();
     private final List<BukkitTask> timerTasks = new ArrayList<>();
 
+    /**
+     * 슬롯별 마지막 시전 시각 (동일 틱 중복 시전 방지)
+     * 좌클릭 시 PlayerInteractEvent + EntityDamageByEntityEvent가 같은 틱에 발생할 수 있음
+     */
+    private final Map<Integer, Long> lastCastTime = new HashMap<>();
+
+    /** 동일 틱 중복 시전 방지 간격 (ms) — 1틱 = 50ms */
+    private static final long DOUBLE_CAST_GUARD = 50L;
+
     public CombatState(UUID playerUuid) { this.playerUuid = playerUuid; }
 
     // -- 쿨타임 --
@@ -42,6 +51,19 @@ public class CombatState {
         return r > 0 ? r / 1000.0 : 0;
     }
     public void clearAllCooldowns() { cooldowns.clear(); }
+
+    /**
+     * 동일 틱 중복 시전인지 확인 (true면 중복 → 스킵 필요)
+     */
+    public boolean isDoubleCast(int slot) {
+        Long last = lastCastTime.get(slot);
+        return last != null && (System.currentTimeMillis() - last) < DOUBLE_CAST_GUARD;
+    }
+
+    /** 시전 시각 기록 */
+    public void markCast(int slot) {
+        lastCastTime.put(slot, System.currentTimeMillis());
+    }
 
     // -- 타이머 --
     public void addTimerTask(BukkitTask t) { timerTasks.add(t); }
