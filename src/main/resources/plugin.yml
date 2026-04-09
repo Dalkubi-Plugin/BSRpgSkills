@@ -1,6 +1,6 @@
-name: BSSkill
+﻿name: BSRpgSkills
 version: '${version}'
-main: kr.yongpyo.bsskill.BSSkill
+main: kr.yongpyo.bsrpgskills.BSRpgSkills
 api-version: '1.21'
 description: 'MMOItems 무기 기반 6슬롯 스킬 + 패시브 시스템'
 author: yongpyo
@@ -15,15 +15,15 @@ softdepend:
   - MMOCore
 
 commands:
-  bsskill:
-    description: 'BSSkill 관리 명령어'
+  bsrpgskills:
+    description: 'BSRpgSkills 관리 명령어'
     usage: '/<command> <editor|reload|list|info|toggle|save|debug|debuglog>'
-    permission: bsskill.admin
+    permission: bsrpgskills.admin
 
 permissions:
-  bsskill.admin:
+  bsrpgskills.admin:
     description: '관리자 명령어 사용'
     default: op
-  bsskill.use:
-    description: '전투 모드 토글'
+  bsrpgskills.use:
+    description: '전투 모드 사용'
     default: true

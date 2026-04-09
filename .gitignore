@@ -1,0 +1,32 @@
+﻿# Build outputs
+/build/
+/out/
+/target/
+
+# Gradle
+/.gradle/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Java crash logs
+hs_err_pid*
+replay_pid*
+
+# IDE
+/.idea/
+*.iml
+*.ipr
+*.iws
+/.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Runtime / logs
+/logs/
+*.log
+/run/
+
+.claude
+build/
