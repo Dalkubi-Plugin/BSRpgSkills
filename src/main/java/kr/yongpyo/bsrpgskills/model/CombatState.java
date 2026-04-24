@@ -27,7 +27,14 @@ public class CombatState {
     private int originalSlot = -1;
     private boolean swapped;
 
-    private final Map<Integer, Long> cooldowns = new HashMap<>();
+    /**
+     * 무기별로 분리된 쿨타임 저장소입니다.
+     * 외부 맵: weaponId → 내부 맵: 슬롯키(슬롯 1~6 또는 100+passiveIndex) → 만료 시각(ms)
+     *
+     * 무기 간 쿨타임 간섭을 구조적으로 차단하고,
+     * 전투 모드 토글로 인해 쿨타임이 초기화되지 않도록 플레이어 세션 수명에 맞춰 유지합니다.
+     */
+    private final Map<String, Map<Integer, Long>> cooldownsByWeapon = new HashMap<>();
     private final List<BukkitTask> timerTasks = new ArrayList<>();
     private final Map<Integer, Long> lastCastTimes = new HashMap<>();
 
@@ -37,16 +44,35 @@ public class CombatState {
      */
     private volatile boolean internalCasting;
 
-    public void setCooldown(int slot, double seconds) {
-        cooldowns.put(slot, System.currentTimeMillis() + (long) (seconds * 1000));
+    public void setCooldown(String weaponId, int slot, double seconds) {
+        if (weaponId == null) {
+            return;
+        }
+        cooldownsByWeapon
+                .computeIfAbsent(weaponId, k -> new HashMap<>())
+                .put(slot, System.currentTimeMillis() + (long) (seconds * 1000));
     }
 
-    public boolean isOnCooldown(int slot) {
+    public boolean isOnCooldown(String weaponId, int slot) {
+        if (weaponId == null) {
+            return false;
+        }
+        Map<Integer, Long> cooldowns = cooldownsByWeapon.get(weaponId);
+        if (cooldowns == null) {
+            return false;
+        }
         Long expiresAt = cooldowns.get(slot);
         return expiresAt != null && System.currentTimeMillis() < expiresAt;
     }
 
-    public double getRemainingCooldown(int slot) {
+    public double getRemainingCooldown(String weaponId, int slot) {
+        if (weaponId == null) {
+            return 0;
+        }
+        Map<Integer, Long> cooldowns = cooldownsByWeapon.get(weaponId);
+        if (cooldowns == null) {
+            return 0;
+        }
         Long expiresAt = cooldowns.get(slot);
         if (expiresAt == null) {
             return 0;
@@ -55,18 +81,30 @@ public class CombatState {
         return Math.max(0, (expiresAt - System.currentTimeMillis()) / 1000.0);
     }
 
+    /**
+     * 모든 무기의 쿨타임을 강제로 비웁니다.
+     * 관리자 명령 등 명시적 초기화 경로에서만 호출됩니다.
+     * 전투 모드 토글/사망에서는 호출하지 않습니다.
+     */
     public void clearAllCooldowns() {
-        cooldowns.clear();
+        cooldownsByWeapon.clear();
     }
 
     /**
      * 현재 남아 있는 쿨타임만 디버그/표시용으로 복사해 반환합니다.
      * 이미 끝난 쿨타임은 제외해 실제로 의미 있는 값만 보이게 합니다.
      */
-    public Map<Integer, Double> getCooldownSnapshot() {
+    public Map<Integer, Double> getCooldownSnapshot(String weaponId) {
         Map<Integer, Double> snapshot = new LinkedHashMap<>();
+        if (weaponId == null) {
+            return snapshot;
+        }
+        Map<Integer, Long> cooldowns = cooldownsByWeapon.get(weaponId);
+        if (cooldowns == null) {
+            return snapshot;
+        }
         for (Integer key : cooldowns.keySet()) {
-            double remaining = getRemainingCooldown(key);
+            double remaining = getRemainingCooldown(weaponId, key);
             if (remaining > 0) {
                 snapshot.put(key, remaining);
             }
@@ -112,6 +150,11 @@ public class CombatState {
         return weaponSlot >= 0 && heldSlot == weaponSlot;
     }
 
+    /**
+     * 전투 모드 관련 런타임 상태를 초기화합니다.
+     * 쿨타임은 플레이어 세션 전체에 걸쳐 유지되어야 하므로
+     * 여기서는 클리어하지 않습니다. 명시적으로 비우려면 {@link #clearAllCooldowns()}를 호출하세요.
+     */
     public void reset() {
         combatMode = false;
         currentWeaponId = null;
@@ -119,7 +162,6 @@ public class CombatState {
         originalSlot = -1;
         swapped = false;
         internalCasting = false;
-        clearAllCooldowns();
         cancelAllTimers();
         lastCastTimes.clear();
     }

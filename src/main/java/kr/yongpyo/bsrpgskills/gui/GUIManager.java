@@ -2,6 +2,7 @@ package kr.yongpyo.bsrpgskills.gui;
 
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
 import kr.yongpyo.bsrpgskills.model.PassiveSlot;
+import kr.yongpyo.bsrpgskills.model.PassiveTrigger;
 import kr.yongpyo.bsrpgskills.model.SkillSlot;
 import kr.yongpyo.bsrpgskills.model.WeaponSkill;
 import net.Indyuce.mmoitems.MMOItems;
@@ -23,7 +24,6 @@ import java.util.Map;
 
 /**
  * BSRpgSkills 전용 GUI 매니저입니다.
- * 화면을 역할별로 나눠 배치해 운영자가 현재 어디를 수정하는지 한눈에 보이도록 구성합니다.
  */
 public class GUIManager {
 
@@ -143,8 +143,8 @@ public class GUIManager {
                 "<white>표시 이름</white>",
                 List.of("<gray>" + emptyFallback(skill.getDisplayName()) + "</gray>", "<yellow>클릭 - 채팅 입력</yellow>")));
         gui.setItem(14, buildItem(Material.CLOCK,
-                "<white>쿨타임: " + skill.getCooldown() + "초</white>",
-                List.of("<yellow>좌클릭 -0.5 / 우클릭 +0.5</yellow>", "<yellow>Shift 좌클릭 -5 / Shift 우클릭 +5</yellow>")));
+                "<white>쿨다운: " + skill.getCooldown() + "초</white>",
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
         gui.setItem(15, buildItem(Material.PAPER,
                 "<white>설명</white>",
                 List.of("<gray>" + emptyFallback(skill.getDescription()) + "</gray>", "<yellow>클릭 - 채팅 입력</yellow>")));
@@ -157,10 +157,10 @@ public class GUIManager {
 
         gui.setItem(28, buildItem(Material.IRON_SWORD,
                 "<white>damage: " + skill.getDamage() + "</white>",
-                List.of("<yellow>좌클릭 -1 / 우클릭 +1</yellow>", "<yellow>Shift 좌클릭 -5 / Shift 우클릭 +5</yellow>")));
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
         gui.setItem(29, buildItem(Material.BLAZE_POWDER,
                 "<white>ratio: " + skill.getRatio() + "</white>",
-                List.of("<yellow>좌클릭 -0.1 / 우클릭 +0.1</yellow>", "<yellow>Shift 좌클릭 -1.0 / Shift 우클릭 +1.0</yellow>")));
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
 
         int modifierSlot = 30;
         for (var entry : skill.getModifiers().entrySet()) {
@@ -173,7 +173,7 @@ public class GUIManager {
 
             gui.setItem(modifierSlot, buildItem(Material.PAPER,
                     "<white>" + entry.getKey() + ": " + entry.getValue() + "</white>",
-                    List.of("<yellow>좌클릭 -1 / 우클릭 +1</yellow>", "<yellow>Shift 좌클릭 -5 / Shift 우클릭 +5</yellow>")));
+                    List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
             holder.mapModifierSlot(modifierSlot, entry.getKey());
             modifierSlot++;
         }
@@ -187,7 +187,7 @@ public class GUIManager {
                 "<gold>표시 규칙</gold>",
                 List.of(
                         "<gray>damage와 ratio는 전용 버튼으로 수정</gray>",
-                        "<gray>기타 modifier는 최대 4개까지 아래줄 표시</gray>"
+                        "<gray>기타 modifier는 최대 4개까지 아래줄에 표시</gray>"
                 )));
 
         player.openInventory(gui);
@@ -212,6 +212,7 @@ public class GUIManager {
                 passive.getDisplayName(),
                 List.of(
                         "<gray>스킬 ID: <white>" + passive.getType() + "</white></gray>",
+                        "<gray>트리거: <white>" + passive.getTriggerType().getLabel() + "</white></gray>",
                         "<gray>활성화: <white>" + (passive.isEnabled() ? "ON" : "OFF") + "</white></gray>"
                 )));
 
@@ -224,15 +225,26 @@ public class GUIManager {
         gui.setItem(12, buildItem(Material.WRITABLE_BOOK,
                 "<white>표시 이름</white>",
                 List.of("<gray>" + emptyFallback(passive.getDisplayName()) + "</gray>", "<yellow>클릭 - 채팅 입력</yellow>")));
+        gui.setItem(13, buildItem(Material.COMPASS,
+                "<aqua>발동 조건: " + passive.getTriggerType().getLabel() + "</aqua>",
+                List.of("<yellow>클릭하여 전환</yellow>",
+                        "<gray>주기 발동 / 피격 시 / 가격 시 변경</gray>")));
         gui.setItem(14, buildItem(Material.REPEATER,
                 "<white>발동 주기: " + passive.getTimer() + "초</white>",
-                List.of("<yellow>좌클릭 -0.5 / 우클릭 +0.5</yellow>", "<yellow>Shift 좌클릭 -5 / Shift 우클릭 +5</yellow>")));
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>",
+                        passive.getTriggerType().isEventTrigger() ? "<dark_gray>(이벤트 트리거에서는 미사용)</dark_gray>" : "")));
         gui.setItem(15, buildItem(Material.CLOCK,
-                "<white>쿨타임: " + passive.getCooldown() + "초</white>",
-                List.of("<yellow>좌클릭 -0.5 / 우클릭 +0.5</yellow>", "<yellow>Shift 좌클릭 -5 / Shift 우클릭 +5</yellow>")));
+                "<white>쿨다운: " + passive.getCooldown() + "초</white>",
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
         gui.setItem(16, buildItem(Material.PAPER,
                 "<white>설명</white>",
                 List.of("<gray>" + emptyFallback(passive.getDescription()) + "</gray>", "<yellow>클릭 - 채팅 입력</yellow>")));
+
+        gui.setItem(22, buildItem(Material.RABBIT_FOOT,
+                "<gold>발동 확률: " + String.format("%.0f", passive.getChance() * 100) + "%</gold>",
+                List.of("<yellow>좌클릭 +10% / 우클릭 -10%</yellow>",
+                        "<yellow>Shift 좌클릭 +100% / Shift 우클릭 -100%</yellow>",
+                        "<gray>이벤트 트리거(피격/가격)에서 사용합니다.</gray>")));
 
         int modifierSlot = 28;
         for (var entry : passive.getModifiers().entrySet()) {
@@ -241,7 +253,7 @@ public class GUIManager {
             }
             gui.setItem(modifierSlot, buildItem(Material.PAPER,
                     "<white>" + entry.getKey() + ": " + entry.getValue() + "</white>",
-                    List.of("<yellow>좌클릭 -1 / 우클릭 +1</yellow>", "<yellow>Shift 좌클릭 -5 / Shift 우클릭 +5</yellow>")));
+                    List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
             holder.mapModifierSlot(modifierSlot, entry.getKey());
             modifierSlot++;
         }
@@ -266,7 +278,7 @@ public class GUIManager {
                 text("<gray>스킬 ID: <white>" + emptyFallback(skill.getMythicId()) + "</white></gray>"),
                 text("<gray>damage: <white>" + skill.getDamage() + "</white></gray>"),
                 text("<gray>ratio: <white>" + skill.getRatio() + "</white></gray>"),
-                text("<gray>쿨타임: <white>" + skill.getCooldown() + "초</white></gray>"),
+                text("<gray>쿨다운: <white>" + skill.getCooldown() + "초</white></gray>"),
                 text("<yellow>클릭하여 편집</yellow>")
         ));
         icon.setItemMeta(meta);
@@ -278,12 +290,17 @@ public class GUIManager {
         ItemMeta meta = icon.getItemMeta();
 
         String status = passive.isEnabled() ? "<green>ON</green>" : "<red>OFF</red>";
-        meta.displayName(text("[" + status + "<white>] 패시브 </white>" + passive.getDisplayName()));
+        meta.displayName(text("[" + status + "<white>] 패시브</white>" + passive.getDisplayName()));
 
         List<Component> lore = new ArrayList<>();
         lore.add(text("<gray>스킬 ID: <white>" + passive.getType() + "</white></gray>"));
-        lore.add(text("<gray>발동 주기: <white>" + passive.getTimer() + "초</white></gray>"));
-        lore.add(text("<gray>쿨타임: <white>" + passive.getCooldown() + "초</white></gray>"));
+        lore.add(text("<gray>트리거: <white>" + passive.getTriggerType().getLabel() + "</white></gray>"));
+        if (passive.getTriggerType() == PassiveTrigger.TIMER) {
+            lore.add(text("<gray>발동 주기: <white>" + passive.getTimer() + "초</white></gray>"));
+        } else {
+            lore.add(text("<gray>발동 확률: <white>" + String.format("%.0f%%", passive.getChance() * 100) + "</white></gray>"));
+        }
+        lore.add(text("<gray>쿨다운: <white>" + passive.getCooldown() + "초</white></gray>"));
         if (!passive.getModifiers().isEmpty()) {
             lore.add(text("<gray>modifier: <white>" + passive.getModifiers().keySet() + "</white></gray>"));
         }

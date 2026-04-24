@@ -2,6 +2,7 @@ package kr.yongpyo.bsrpgskills.manager;
 
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
 import kr.yongpyo.bsrpgskills.model.PassiveSlot;
+import kr.yongpyo.bsrpgskills.model.PassiveTrigger;
 import kr.yongpyo.bsrpgskills.model.SkillSlot;
 import kr.yongpyo.bsrpgskills.model.WeaponSkill;
 import org.bukkit.configuration.ConfigurationSection;
@@ -149,6 +150,8 @@ public class WeaponSkillManager {
             index++;
             PassiveSlot passive = new PassiveSlot(index);
             passive.setType(readString(section, "type", ""));
+            passive.setTriggerType(PassiveTrigger.parse(readString(section, "trigger", "TIMER")));
+            passive.setChance(readDouble(section, "timing.chance", "chance", 1.0));
             passive.setDisplayName(readString(section, "display.name", "display-name", "<gray>비어 있음</gray>"));
             passive.setTimer(readDouble(section, "timing.interval", "timer", 10.0));
             passive.setCooldown(readDouble(section, "timing.cooldown", "cooldown", 0));
@@ -176,7 +179,7 @@ public class WeaponSkillManager {
                 continue;
             }
 
-            if (passive.getTimer() < 0.1) {
+            if (passive.getTriggerType() == PassiveTrigger.TIMER && passive.getTimer() < 0.1) {
                 plugin.getLogger().warning("[" + weaponId + "] " + key + ": interval이 너무 작아 0.1로 보정됩니다.");
             }
 
@@ -203,8 +206,10 @@ public class WeaponSkillManager {
 
         for (PassiveSlot passive : weapon.getPassives()) {
             plugin.logDebug("패시브 | " + passive.getType()
+                    + " | trigger:" + passive.getTriggerType().name()
                     + " | interval:" + passive.getTimer() + "s"
                     + " | cooldown:" + passive.getCooldown() + "s"
+                    + " | chance:" + String.format("%.0f%%", passive.getChance() * 100)
                     + " | modifiers:" + passive.getModifiers().keySet());
         }
     }
@@ -241,9 +246,11 @@ public class WeaponSkillManager {
             String path = "passives.passive-" + passiveIndex;
 
             config.set(path + ".type", passive.getType());
+            config.set(path + ".trigger", passive.getTriggerType().name());
             config.set(path + ".enabled", passive.isEnabled());
             config.set(path + ".timing.interval", passive.getTimer());
             config.set(path + ".timing.cooldown", passive.getCooldown());
+            config.set(path + ".timing.chance", passive.getChance());
             config.set(path + ".display.name", passive.getDisplayName());
             config.set(path + ".display.description", passive.getDescription());
             config.set(path + ".display.icon", passive.getIcon());

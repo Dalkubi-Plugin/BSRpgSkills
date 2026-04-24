@@ -21,13 +21,14 @@ import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * BSRpgSkills GUI의 클릭과 채팅 입력을 처리합니다.
- * 채팅 입력은 임시 컨텍스트에 저장한 뒤 메인 스레드에서 안전하게 반영합니다.
+ * BSRpgSkills GUI 클릭과 채팅 입력을 처리합니다.
  */
 public class GUIListener implements Listener {
 
@@ -156,9 +157,9 @@ public class GUIListener implements Listener {
                 prompt(player, "표시 이름 (MiniMessage 가능)");
             }
             case 14 -> {
-                double delta = delta(clickType, 0.5, 5);
+                double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    skill.setCooldown(skill.getCooldown() + delta);
+                    skill.setCooldown(roundToTenth(skill.getCooldown() + delta));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
@@ -168,16 +169,16 @@ public class GUIListener implements Listener {
                 prompt(player, "스킬 설명");
             }
             case 28 -> {
-                double delta = delta(clickType, 1, 5);
+                double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    skill.setDamage(skill.getDamage() + delta);
+                    skill.setDamage(roundToTenth(skill.getDamage() + delta));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
             case 29 -> {
-                double delta = delta(clickType, 0.1, 1.0);
+                double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    skill.setRatio(skill.getRatio() + delta);
+                    skill.setRatio(roundToTenth(skill.getRatio() + delta));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
@@ -196,10 +197,10 @@ public class GUIListener implements Listener {
                     return;
                 }
 
-                double delta = delta(clickType, 1, 5);
+                double delta = skillDelta(clickType);
                 if (delta != 0) {
                     double current = skill.getModifiers().getOrDefault(modifierKey, 0.0);
-                    skill.putModifier(modifierKey, Math.max(0, current + delta));
+                    skill.putModifier(modifierKey, roundToTenth(Math.max(0, current + delta)));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
@@ -230,17 +231,21 @@ public class GUIListener implements Listener {
                 startInput(player, InputType.PASSIVE_NAME, holder.getWeaponId(), -1, holder.getPassiveIndex());
                 prompt(player, "표시 이름 (MiniMessage 가능)");
             }
+            case 13 -> {
+                passive.setTriggerType(passive.getTriggerType().next());
+                saveRefreshPassive(player, weapon, holder.getPassiveIndex());
+            }
             case 14 -> {
-                double delta = delta(clickType, 0.5, 5);
+                double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    passive.setTimer(passive.getTimer() + delta);
+                    passive.setTimer(roundToTenth(passive.getTimer() + delta));
                     saveRefreshPassive(player, weapon, holder.getPassiveIndex());
                 }
             }
             case 15 -> {
-                double delta = delta(clickType, 0.5, 5);
+                double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    passive.setCooldown(passive.getCooldown() + delta);
+                    passive.setCooldown(roundToTenth(passive.getCooldown() + delta));
                     saveRefreshPassive(player, weapon, holder.getPassiveIndex());
                 }
             }
@@ -248,6 +253,13 @@ public class GUIListener implements Listener {
                 player.closeInventory();
                 startInput(player, InputType.PASSIVE_DESC, holder.getWeaponId(), -1, holder.getPassiveIndex());
                 prompt(player, "패시브 설명");
+            }
+            case 22 -> {
+                double delta = skillDelta(clickType);
+                if (delta != 0) {
+                    passive.setChance(roundToTenth(passive.getChance() + delta));
+                    saveRefreshPassive(player, weapon, holder.getPassiveIndex());
+                }
             }
             case 36 -> {
                 plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
@@ -259,10 +271,10 @@ public class GUIListener implements Listener {
                     return;
                 }
 
-                double delta = delta(clickType, 1, 5);
+                double delta = skillDelta(clickType);
                 if (delta != 0) {
                     double current = passive.getModifiers().getOrDefault(modifierKey, 0.0);
-                    passive.putModifier(modifierKey, Math.max(0, current + delta));
+                    passive.putModifier(modifierKey, roundToTenth(Math.max(0, current + delta)));
                     saveRefreshPassive(player, weapon, holder.getPassiveIndex());
                 }
             }
@@ -274,7 +286,7 @@ public class GUIListener implements Listener {
     }
 
     private void prompt(Player player, String label) {
-        player.sendMessage(mm.deserialize("<gray>" + label + "을 입력하세요. <dark_gray>(cancel = 취소)</dark_gray></gray>"));
+        player.sendMessage(mm.deserialize("<gray>" + label + "를 입력하세요. <dark_gray>(cancel = 취소)</dark_gray></gray>"));
     }
 
     @SuppressWarnings("deprecation")
@@ -409,7 +421,7 @@ public class GUIListener implements Listener {
         }
 
         skill.putModifier(keyResult.normalizedKey(), valueResult.value());
-        plugin.logDebug("modifier 저장: " + weapon.getWeaponId() + " slot-" + slot
+        plugin.logDebug("modifier 저장 " + weapon.getWeaponId() + " slot-" + slot
                 + " " + keyResult.normalizedKey() + "=" + valueResult.value());
         return true;
     }
@@ -444,14 +456,20 @@ public class GUIListener implements Listener {
         click(player);
     }
 
-    private double delta(ClickType clickType, double small, double large) {
+    private double skillDelta(ClickType clickType) {
         return switch (clickType) {
-            case LEFT -> -small;
-            case RIGHT -> small;
-            case SHIFT_LEFT -> -large;
-            case SHIFT_RIGHT -> large;
+            case LEFT -> 0.1;
+            case RIGHT -> -0.1;
+            case SHIFT_LEFT -> 1.0;
+            case SHIFT_RIGHT -> -1.0;
             default -> 0;
         };
+    }
+
+    private double roundToTenth(double value) {
+        return BigDecimal.valueOf(value)
+                .setScale(1, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 
     private void click(Player player) {

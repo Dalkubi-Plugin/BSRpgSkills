@@ -61,7 +61,7 @@ public class BSRpgSkillsExpansion extends PlaceholderExpansion {
         return switch (parts[2]) {
             case "name" -> s.getDisplayName();
             case "id" -> s.getMythicId();
-            case "cooldown" -> { double r = state.getRemainingCooldown(slot); yield r > 0 ? String.format("%.1f", r) : "0.0"; }
+            case "cooldown" -> { double r = state.getRemainingCooldown(w.getWeaponId(), slot); yield r > 0 ? String.format("%.1f", r) : "0.0"; }
             case "damage" -> String.valueOf(s.getDamage());
             case "enabled" -> String.valueOf(s.isEnabled());
             case "keybind" -> s.getKeybindLabel();

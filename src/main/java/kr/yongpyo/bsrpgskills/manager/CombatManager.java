@@ -10,6 +10,7 @@ import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
 import kr.yongpyo.bsrpgskills.model.CombatState;
 import kr.yongpyo.bsrpgskills.model.PassiveSlot;
+import kr.yongpyo.bsrpgskills.model.PassiveTrigger;
 import kr.yongpyo.bsrpgskills.model.SkillSlot;
 import kr.yongpyo.bsrpgskills.model.WeaponSkill;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -25,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 전투 모드 진입, 무기 고정, 스킬 캐스팅, 패시브 타이머까지
@@ -166,7 +168,7 @@ public class CombatManager {
         state.setCombatMode(true);
         state.setCurrentWeaponId(weaponId);
         state.setWeaponSlot(WEAPON_SLOT);
-        state.clearAllCooldowns();
+        // 쿨타임은 플레이어 세션 수명 동안 유지됩니다 — 전투 모드 토글로 초기화되지 않습니다.
         startPassiveTimers(player, state, weapon);
 
         sendMsg(player, msgCombatOn.replace("{weapon}", weapon.getDisplayName()));
@@ -233,20 +235,59 @@ public class CombatManager {
     }
 
     private void startPassiveTimers(Player player, CombatState state, WeaponSkill weapon) {
+        UUID playerId = player.getUniqueId();
+
         for (PassiveSlot passive : weapon.getPassives()) {
-            if (!passive.isValid()) {
+            if (!passive.isValid() || passive.getTriggerType() != PassiveTrigger.TIMER) {
                 continue;
             }
 
             long intervalTicks = Math.max(1L, Math.round(passive.getTimer() * 20));
             BukkitTask task = Bukkit.getScheduler().runTaskTimer(plugin, () -> {
-                if (!canRunPassive(player, state)) {
+                Player current = Bukkit.getPlayer(playerId);
+                CombatState currentState = states.get(playerId);
+                if (current == null || currentState == null || !canRunPassive(current, currentState)) {
                     return;
                 }
 
-                castPassive(player, state, passive);
+                castPassive(current, currentState, passive);
             }, intervalTicks, intervalTicks);
             state.addTimerTask(task);
+        }
+    }
+
+    /**
+     * 이벤트 기반 패시브(ON_DAMAGE_DEALT, ON_DAMAGE_TAKEN)를 발동합니다.
+     * 해당 트리거와 일치하는 패시브를 순회하며 chance/cooldown 검증 후 캐스팅합니다.
+     *
+     * @param player  전투 모드 중인 플레이어
+     * @param trigger 발동 조건 (TIMER 제외)
+     */
+    public void triggerEventPassives(Player player, PassiveTrigger trigger) {
+        if (!trigger.isEventTrigger()) {
+            return;
+        }
+
+        CombatState state = states.get(player.getUniqueId());
+        if (state == null || state.isInternalCasting() || !canRunPassive(player, state)) {
+            return;
+        }
+
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(state.getCurrentWeaponId());
+        if (weapon == null) {
+            return;
+        }
+
+        for (PassiveSlot passive : weapon.getPassives()) {
+            if (!passive.isValid() || passive.getTriggerType() != trigger) {
+                continue;
+            }
+
+            if (passive.getChance() < 1.0 && ThreadLocalRandom.current().nextDouble() >= passive.getChance()) {
+                continue;
+            }
+
+            castPassive(player, state, passive);
         }
     }
 
@@ -258,13 +299,14 @@ public class CombatManager {
 
     private void castPassive(Player player, CombatState state, PassiveSlot passive) {
         int cooldownKey = 100 + passive.getIndex();
-        if (passive.getCooldown() > 0 && state.isOnCooldown(cooldownKey)) {
+        String weaponId = state.getCurrentWeaponId();
+        if (passive.getCooldown() > 0 && state.isOnCooldown(weaponId, cooldownKey)) {
             return;
         }
 
         boolean castSucceeded = executeCast(player, state, passive.getType(), passive.getModifiers());
         if (castSucceeded && passive.getCooldown() > 0) {
-            state.setCooldown(cooldownKey, passive.getCooldown());
+            state.setCooldown(weaponId, cooldownKey, passive.getCooldown());
         }
     }
 
@@ -283,8 +325,9 @@ public class CombatManager {
             return false;
         }
 
-        if (state.isOnCooldown(slotNumber)) {
-            double remaining = state.getRemainingCooldown(slotNumber);
+        String weaponId = state.getCurrentWeaponId();
+        if (state.isOnCooldown(weaponId, slotNumber)) {
+            double remaining = state.getRemainingCooldown(weaponId, slotNumber);
             sendMsg(player, msgCooldown.replace("{remaining}", String.format("%.1f", remaining)));
             playSound(player, sndCooldownDeny);
             return false;
@@ -301,7 +344,7 @@ public class CombatManager {
         }
 
         if (skill.getCooldown() > 0) {
-            state.setCooldown(slotNumber, skill.getCooldown());
+            state.setCooldown(weaponId, slotNumber, skill.getCooldown());
         }
 
         sendMsg(player, msgSkillCast.replace("{skill}", skill.getDisplayName()));

@@ -7,10 +7,12 @@ import io.lumine.mythic.lib.damage.DamageType;
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
 import kr.yongpyo.bsrpgskills.manager.CombatManager;
 import kr.yongpyo.bsrpgskills.model.CombatState;
+import kr.yongpyo.bsrpgskills.model.PassiveTrigger;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
@@ -56,6 +58,26 @@ public class CombatListener implements Listener {
         }
 
         combat.castSkill(player, 1);
+
+        // 무기 평타 데미지가 발생했으므로 ON_DAMAGE_DEALT 패시브도 발동합니다.
+        combat.triggerEventPassives(player, PassiveTrigger.ON_DAMAGE_DEALT);
+    }
+
+    /**
+     * 전투 모드 중 피격당했을 때 ON_DAMAGE_TAKEN 패시브를 발동합니다.
+     * MONITOR 우선순위로 실제 데미지가 취소되지 않았을 때만 실행됩니다.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onDamageTaken(EntityDamageEvent event) {
+        if (!(event.getEntity() instanceof Player player)) {
+            return;
+        }
+
+        if (!canUseCombatWeapon(player)) {
+            return;
+        }
+
+        combat.triggerEventPassives(player, PassiveTrigger.ON_DAMAGE_TAKEN);
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

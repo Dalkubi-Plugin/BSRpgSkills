@@ -44,7 +44,7 @@ public class CombatHudTask extends BukkitRunnable {
             for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
                 SkillSlot s = weapon.getSkill(i);
                 if (!s.isValid()) { sb.append("<dark_gray>[").append(i).append(":-]</dark_gray> "); continue; }
-                double rem = state.getRemainingCooldown(i);
+                double rem = state.getRemainingCooldown(wId, i);
                 if (rem > 0) sb.append("<red>[").append(i).append(":").append(String.format("%.0f", rem)).append("s]</red> ");
                 else sb.append("<green>[").append(i).append(":OK]</green> ");
             }

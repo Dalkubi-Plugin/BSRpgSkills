@@ -1,4 +1,4 @@
-name: BSRpgSkills
+﻿name: BSRpgSkills
 version: '4.0.3'
 main: kr.yongpyo.bsrpgskills.BSRpgSkills
 api-version: '1.21'
@@ -25,5 +25,5 @@ permissions:
     description: '관리자 명령어 사용'
     default: op
   bsrpgskills.use:
-    description: '전투 모드 토글'
+    description: '전투 모드 사용'
     default: true

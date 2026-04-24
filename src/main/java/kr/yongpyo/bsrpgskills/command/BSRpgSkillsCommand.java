@@ -290,8 +290,10 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
                     + " <gray>(" + weapon.getWeaponId() + ")</gray>"));
         }
 
+        String weaponIdForCooldowns = weapon != null ? weapon.getWeaponId() : state.getCurrentWeaponId();
+
         for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
-            double remaining = state.getRemainingCooldown(i);
+            double remaining = state.getRemainingCooldown(weaponIdForCooldowns, i);
             SkillSlot skill = weapon != null ? weapon.getSkill(i) : null;
             String skillName = skill != null && !skill.getMythicId().isBlank() ? skill.getMythicId() : "비어있음";
             viewer.sendMessage(mm.deserialize("<gray>슬롯 " + i + ":</gray> <white>" + skillName + "</white>"
@@ -300,14 +302,14 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
 
         if (weapon != null && !weapon.getPassives().isEmpty()) {
             for (PassiveSlot passive : weapon.getPassives()) {
-                double remaining = state.getRemainingCooldown(100 + passive.getIndex());
+                double remaining = state.getRemainingCooldown(weaponIdForCooldowns, 100 + passive.getIndex());
                 viewer.sendMessage(mm.deserialize("<gray>패시브 " + passive.getIndex() + ":</gray> <white>"
                         + passive.getType() + "</white> <gray>| cooldown:</gray> <white>"
                         + String.format("%.2f", remaining) + "초</white>"));
             }
         }
 
-        var snapshot = state.getCooldownSnapshot();
+        var snapshot = state.getCooldownSnapshot(weaponIdForCooldowns);
         if (snapshot.isEmpty()) {
             viewer.sendMessage(mm.deserialize("<gray>현재 활성화된 쿨타임이 없습니다.</gray>"));
             return;
