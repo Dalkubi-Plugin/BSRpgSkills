@@ -25,9 +25,11 @@ public class WeaponSkillManager {
 
     private static final String[] DEFAULTS = {
             "AWAKENED_ARCHER_GALEBOW.yml",
+            "AWAKENED_ASSASSIN_DUSKBLADE.yml",
             "AWAKENED_MAGE_RUNESTAFF.yml",
             "AWAKENED_SHAMAN_LIFESCEPTER.yml",
-            "AWAKENED_MARTIAL_ARTIST_TIGERFIST.yml"
+            "AWAKENED_MARTIAL_ARTIST_TIGERFIST.yml",
+            "AWAKENED_WARRIOR_BRUTESWORD.yml"
     };
 
     private final BSRpgSkills plugin;
@@ -151,7 +153,6 @@ public class WeaponSkillManager {
             PassiveSlot passive = new PassiveSlot(index);
             passive.setType(readString(section, "type", ""));
             passive.setTriggerType(PassiveTrigger.parse(readString(section, "trigger", "TIMER")));
-            passive.setChance(readDouble(section, "timing.chance", "chance", 1.0));
             passive.setDisplayName(readString(section, "display.name", "display-name", "<gray>비어 있음</gray>"));
             passive.setTimer(readDouble(section, "timing.interval", "timer", 10.0));
             passive.setCooldown(readDouble(section, "timing.cooldown", "cooldown", 0));
@@ -209,7 +210,6 @@ public class WeaponSkillManager {
                     + " | trigger:" + passive.getTriggerType().name()
                     + " | interval:" + passive.getTimer() + "s"
                     + " | cooldown:" + passive.getCooldown() + "s"
-                    + " | chance:" + String.format("%.0f%%", passive.getChance() * 100)
                     + " | modifiers:" + passive.getModifiers().keySet());
         }
     }
@@ -250,7 +250,6 @@ public class WeaponSkillManager {
             config.set(path + ".enabled", passive.isEnabled());
             config.set(path + ".timing.interval", passive.getTimer());
             config.set(path + ".timing.cooldown", passive.getCooldown());
-            config.set(path + ".timing.chance", passive.getChance());
             config.set(path + ".display.name", passive.getDisplayName());
             config.set(path + ".display.description", passive.getDescription());
             config.set(path + ".display.icon", passive.getIcon());

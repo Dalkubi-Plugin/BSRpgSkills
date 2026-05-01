@@ -160,7 +160,7 @@ public class GUIListener implements Listener {
             case 14 -> {
                 double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    skill.setCooldown(roundToTenth(skill.getCooldown() + delta));
+                    skill.setCooldown(roundToHundredth(skill.getCooldown() + delta));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
@@ -172,14 +172,14 @@ public class GUIListener implements Listener {
             case 28 -> {
                 double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    skill.setDamage(roundToTenth(skill.getDamage() + delta));
+                    skill.setDamage(roundToHundredth(skill.getDamage() + delta));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
             case 29 -> {
                 double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    skill.setRatio(roundToTenth(skill.getRatio() + delta));
+                    skill.setRatio(roundToHundredth(skill.getRatio() + delta));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
@@ -201,7 +201,7 @@ public class GUIListener implements Listener {
                 double delta = skillDelta(clickType);
                 if (delta != 0) {
                     double current = skill.getModifiers().getOrDefault(modifierKey, 0.0);
-                    skill.putModifier(modifierKey, roundToTenth(Math.max(0, current + delta)));
+                    skill.putModifier(modifierKey, roundToHundredth(Math.max(0, current + delta)));
                     saveRefreshSkill(player, weapon, holder.getSlotNumber());
                 }
             }
@@ -239,14 +239,14 @@ public class GUIListener implements Listener {
             case 14 -> {
                 double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    passive.setTimer(roundToTenth(passive.getTimer() + delta));
+                    passive.setTimer(roundToHundredth(passive.getTimer() + delta));
                     saveRefreshPassive(player, weapon, holder.getPassiveIndex());
                 }
             }
             case 15 -> {
                 double delta = skillDelta(clickType);
                 if (delta != 0) {
-                    passive.setCooldown(roundToTenth(passive.getCooldown() + delta));
+                    passive.setCooldown(roundToHundredth(passive.getCooldown() + delta));
                     saveRefreshPassive(player, weapon, holder.getPassiveIndex());
                 }
             }
@@ -254,13 +254,6 @@ public class GUIListener implements Listener {
                 player.closeInventory();
                 startInput(player, InputType.PASSIVE_DESC, holder.getWeaponId(), -1, holder.getPassiveIndex());
                 prompt(player, "패시브 설명");
-            }
-            case 22 -> {
-                double delta = skillDelta(clickType);
-                if (delta != 0) {
-                    passive.setChance(roundToTenth(passive.getChance() + delta));
-                    saveRefreshPassive(player, weapon, holder.getPassiveIndex());
-                }
             }
             case 36 -> {
                 plugin.getGUIManager().openWeaponDetailGUI(player, weapon);
@@ -275,7 +268,7 @@ public class GUIListener implements Listener {
                 double delta = skillDelta(clickType);
                 if (delta != 0) {
                     double current = passive.getModifiers().getOrDefault(modifierKey, 0.0);
-                    passive.putModifier(modifierKey, roundToTenth(Math.max(0, current + delta)));
+                    passive.putModifier(modifierKey, roundToHundredth(Math.max(0, current + delta)));
                     saveRefreshPassive(player, weapon, holder.getPassiveIndex());
                 }
             }
@@ -461,15 +454,16 @@ public class GUIListener implements Listener {
         return switch (clickType) {
             case LEFT -> 0.1;
             case RIGHT -> -0.1;
+            case MIDDLE -> 0.01;
             case SHIFT_LEFT -> 1.0;
             case SHIFT_RIGHT -> -1.0;
             default -> 0;
         };
     }
 
-    private double roundToTenth(double value) {
+    private double roundToHundredth(double value) {
         return BigDecimal.valueOf(value)
-                .setScale(1, RoundingMode.HALF_UP)
+                .setScale(2, RoundingMode.HALF_UP)
                 .doubleValue();
     }
 

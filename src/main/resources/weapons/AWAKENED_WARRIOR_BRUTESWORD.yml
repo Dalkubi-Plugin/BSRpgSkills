@@ -89,7 +89,6 @@ passives:
     timing:
       interval: 10.0
       cooldown: 10.0
-      chance: 1.0
     display:
       name: <gradient:#ff0000:#ff582e>방벽의 본능</gradient>
       description: 피격 시 발동하여 잠시 동안 받는 피해를 줄이고 전사의 투지를 일깨웁니다.

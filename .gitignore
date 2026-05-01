@@ -5,6 +5,7 @@
 
 # Gradle
 /.gradle/
+/.gradle-home/
 !gradle/wrapper/gradle-wrapper.jar
 
 # Java crash logs

@@ -94,7 +94,6 @@ passives:
     timing:
       interval: 10.0
       cooldown: 0.0
-      chance: 1.0
     display:
       name: <gradient:#ffffff:#00ff2a>매복의 일격</gradient>
       description: 전투를 시작하는 첫 공격을 강화해 더 큰 피해를 가합니다.

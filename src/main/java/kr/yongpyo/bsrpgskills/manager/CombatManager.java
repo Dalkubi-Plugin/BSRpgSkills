@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * 전투 모드 진입, 무기 고정, 스킬 캐스팅, 패시브 타이머까지
@@ -275,7 +274,7 @@ public class CombatManager {
 
     /**
      * 이벤트 기반 패시브(ON_DAMAGE_DEALT, ON_DAMAGE_TAKEN)를 발동합니다.
-     * 해당 트리거와 일치하는 패시브를 순회하며 chance/cooldown 검증 후 캐스팅합니다.
+     * 해당 트리거와 일치하는 패시브를 순회하며 cooldown 검증 후 캐스팅합니다.
      *
      * @param player  전투 모드 중인 플레이어
      * @param trigger 발동 조건 (TIMER 제외)
@@ -297,10 +296,6 @@ public class CombatManager {
 
         for (PassiveSlot passive : weapon.getPassives()) {
             if (!passive.isValid() || passive.getTriggerType() != trigger) {
-                continue;
-            }
-
-            if (passive.getChance() < 1.0 && ThreadLocalRandom.current().nextDouble() >= passive.getChance()) {
                 continue;
             }
 

@@ -92,7 +92,6 @@ passives:
     timing:
       interval: 2.0
       cooldown: 0.0
-      chance: 1.0
     display:
       name: <gradient:#ffffff:#e1ff8f>영혼의 결속</gradient>
       description: 주변 아군과 영혼의 연결을 만들어 회복과 강화 효과를 부여합니다.

@@ -93,7 +93,6 @@ passives:
     timing:
       interval: 10.0
       cooldown: 7.0
-      chance: 1.0
     display:
       name: <gradient:#ffffff:#e1ff8f>마나 보호막</gradient>
       description: 주기적으로 보호막을 재정비하여 다음 공격 한 번을 막아냅니다.

@@ -144,7 +144,7 @@ public class GUIManager {
                 List.of("<gray>" + emptyFallback(skill.getDisplayName()) + "</gray>", "<yellow>클릭 - 채팅 입력</yellow>")));
         gui.setItem(14, buildItem(Material.CLOCK,
                 "<white>쿨다운: " + skill.getCooldown() + "초</white>",
-                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>휠클릭 +0.01</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
         gui.setItem(15, buildItem(Material.PAPER,
                 "<white>설명</white>",
                 List.of("<gray>" + emptyFallback(skill.getDescription()) + "</gray>", "<yellow>클릭 - 채팅 입력</yellow>")));
@@ -157,10 +157,10 @@ public class GUIManager {
 
         gui.setItem(28, buildItem(Material.IRON_SWORD,
                 "<white>damage: " + skill.getDamage() + "</white>",
-                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>휠클릭 +0.01</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
         gui.setItem(29, buildItem(Material.BLAZE_POWDER,
                 "<white>ratio: " + skill.getRatio() + "</white>",
-                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>휠클릭 +0.01</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
 
         int modifierSlot = 30;
         for (var entry : skill.getModifiers().entrySet()) {
@@ -173,7 +173,7 @@ public class GUIManager {
 
             gui.setItem(modifierSlot, buildItem(Material.PAPER,
                     "<white>" + entry.getKey() + ": " + entry.getValue() + "</white>",
-                    List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
+                    List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>휠클릭 +0.01</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
             holder.mapModifierSlot(modifierSlot, entry.getKey());
             modifierSlot++;
         }
@@ -231,20 +231,14 @@ public class GUIManager {
                         "<gray>주기 발동 / 피격 시 / 가격 시 변경</gray>")));
         gui.setItem(14, buildItem(Material.REPEATER,
                 "<white>발동 주기: " + passive.getTimer() + "초</white>",
-                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>",
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>휠클릭 +0.01</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>",
                         passive.getTriggerType().isEventTrigger() ? "<dark_gray>(이벤트 트리거에서는 미사용)</dark_gray>" : "")));
         gui.setItem(15, buildItem(Material.CLOCK,
                 "<white>쿨다운: " + passive.getCooldown() + "초</white>",
-                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
+                List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>휠클릭 +0.01</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
         gui.setItem(16, buildItem(Material.PAPER,
                 "<white>설명</white>",
                 List.of("<gray>" + emptyFallback(passive.getDescription()) + "</gray>", "<yellow>클릭 - 채팅 입력</yellow>")));
-
-        gui.setItem(22, buildItem(Material.RABBIT_FOOT,
-                "<gold>발동 확률: " + String.format("%.0f", passive.getChance() * 100) + "%</gold>",
-                List.of("<yellow>좌클릭 +10% / 우클릭 -10%</yellow>",
-                        "<yellow>Shift 좌클릭 +100% / Shift 우클릭 -100%</yellow>",
-                        "<gray>이벤트 트리거(피격/가격)에서 사용합니다.</gray>")));
 
         int modifierSlot = 28;
         for (var entry : passive.getModifiers().entrySet()) {
@@ -253,7 +247,7 @@ public class GUIManager {
             }
             gui.setItem(modifierSlot, buildItem(Material.PAPER,
                     "<white>" + entry.getKey() + ": " + entry.getValue() + "</white>",
-                    List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
+                    List.of("<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>", "<yellow>휠클릭 +0.01</yellow>", "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>")));
             holder.mapModifierSlot(modifierSlot, entry.getKey());
             modifierSlot++;
         }
@@ -298,7 +292,7 @@ public class GUIManager {
         if (passive.getTriggerType() == PassiveTrigger.TIMER) {
             lore.add(text("<gray>발동 주기: <white>" + passive.getTimer() + "초</white></gray>"));
         } else {
-            lore.add(text("<gray>발동 확률: <white>" + String.format("%.0f%%", passive.getChance() * 100) + "</white></gray>"));
+            lore.add(text("<gray>이벤트 발생 시 쿨다운 기준으로 발동</gray>"));
         }
         lore.add(text("<gray>쿨다운: <white>" + passive.getCooldown() + "초</white></gray>"));
         if (!passive.getModifiers().isEmpty()) {

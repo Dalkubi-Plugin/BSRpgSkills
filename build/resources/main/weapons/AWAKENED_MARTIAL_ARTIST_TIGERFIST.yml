@@ -92,7 +92,6 @@ passives:
     timing:
       interval: 1.0
       cooldown: 15.0
-      chance: 1.0
     display:
       name: <gradient:#ffffff:#e1ff8f>민첩한 타격</gradient>
       description: 전투 중 이동성과 연속 공격 성능을 강화합니다.
