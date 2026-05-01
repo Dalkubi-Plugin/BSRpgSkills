@@ -96,9 +96,7 @@ public class CombatListener implements Listener {
 
             // 허공 좌클릭/블록 좌클릭 모두 평타 슬롯 1로 연결합니다.
             // 실제 타격이 있었다면 PlayerAttackEvent도 들어오지만, 중복 발동 가드가 1회를 보장합니다.
-            if (!event.hasBlock() || event.getClickedBlock() != null) {
-                combat.castSkill(player, 1);
-            }
+            combat.castSkill(player, 1);
             return;
         }
 

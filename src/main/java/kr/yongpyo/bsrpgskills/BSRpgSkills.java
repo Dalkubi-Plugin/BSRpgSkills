@@ -77,10 +77,16 @@ public class BSRpgSkills extends JavaPlugin {
     }
 
     private void stopHudTask() {
-        if (hudTask != null && !hudTask.isCancelled()) {
-            hudTask.cancel();
-            hudTask = null;
+        if (hudTask == null) {
+            return;
         }
+
+        try {
+            hudTask.cancel();
+        } catch (IllegalStateException ignored) {
+            // 스케줄되지 않았거나 이미 취소된 경우를 안전하게 무시합니다.
+        }
+        hudTask = null;
     }
 
     public void restartHudTask() {
@@ -88,6 +94,7 @@ public class BSRpgSkills extends JavaPlugin {
         reloadRuntimeSettings();
         combatManager.reloadMessages();
         combatManager.warmUpHandlerCache();
+        combatManager.refreshPassiveTimers();
         startHudTask();
     }
 

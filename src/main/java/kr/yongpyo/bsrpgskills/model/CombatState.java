@@ -152,12 +152,17 @@ public class CombatState {
 
     /**
      * 전투 모드 관련 런타임 상태를 초기화합니다.
-     * 쿨타임은 플레이어 세션 전체에 걸쳐 유지되어야 하므로
-     * 여기서는 클리어하지 않습니다. 명시적으로 비우려면 {@link #clearAllCooldowns()}를 호출하세요.
+     *
+     * <p>쿨타임과 {@code currentWeaponId}는 플레이어 세션 전체에 걸쳐 유지됩니다:
+     * <ul>
+     *   <li>쿨타임은 토글로 초기화되어선 안 되므로 보존</li>
+     *   <li>{@code currentWeaponId}는 "마지막으로 사용한 전투 무기"로 남아서
+     *       플레이스홀더/커맨드가 전투 OFF 상태에서도 올바른 무기 컨텍스트를 조회할 수 있게 함</li>
+     * </ul>
+     * 완전 초기화는 플레이어 로그아웃 시 {@link CombatManager#removeState} 경로로 처리됩니다.
      */
     public void reset() {
         combatMode = false;
-        currentWeaponId = null;
         weaponSlot = -1;
         originalSlot = -1;
         swapped = false;

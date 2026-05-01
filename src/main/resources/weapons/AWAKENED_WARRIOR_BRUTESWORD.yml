@@ -1,0 +1,99 @@
+mmo-type: SWORD
+display-name: <gradient:#ff0000:#ff582e:#ff0000>각성한 전사의 대검</gradient>
+skills:
+  slot-1:
+    mythic-id: BRUTAL_COMBO
+    enabled: true
+    timing:
+      cooldown: 0.6
+    display:
+      name: <gradient:#FFD700:#FF8C00>무자비한 연격</gradient>
+      description: 전방으로 파고들며 강력한 연속 베기를 가합니다. 4타 시전 시 공중으로 도약하여 지면을 강타해 거대한 균열을 일으킵니다.
+      icon: BLAZE_POWDER
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.5
+      damage: 5.0
+  slot-2:
+    mythic-id: BERSERKERS_LEAP
+    enabled: true
+    timing:
+      cooldown: 9.0
+    display:
+      name: <gradient:#00FFFF:#0080FF>광전사의 도약</gradient>
+      description: 지면을 박차고 도약한 뒤 하강하며 주변의 모든 적을 짓눌러 접근을 차단합니다.
+      icon: SPECTRAL_ARROW
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 4.0
+  slot-3:
+    mythic-id: RELENTLESS_WHIRLWIND
+    enabled: true
+    timing:
+      cooldown: 15.5
+    display:
+      name: <gradient:#FFA500:#FF4500>끈질긴 회오리</gradient>
+      description: 대검을 크게 휘둘러 주변의 적들을 끌어당기고 바깥으로 밀어내는 광역 회전 베기를 가합니다.
+      icon: ARROW
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 4.0
+  slot-4:
+    mythic-id: BLOODBOUND_BARRIER
+    enabled: true
+    timing:
+      cooldown: 45.0
+    display:
+      name: <gradient:#FF4D4D:#8B0000>혈맥의 장벽</gradient>
+      description: 잠시 숨을 고르며 방어 태세를 갖춘 후, 적의 방어를 관통하는 강력한 일격을 연사합니다.
+      icon: BOW
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      duration: 8.0
+      damage: 4.0
+  slot-5:
+    mythic-id: VICIOUS_STRIKE
+    enabled: true
+    timing:
+      cooldown: 21.5
+    display:
+      name: <gradient:#FF0000:#4B0000>잔혹한 일격</gradient>
+      description: 대검에 모든 투기를 집중해 경로상의 모든 것을 파괴하는 초강력 궤적 베기를 발사합니다.
+      icon: TNT
+      custom-model-data: 0
+    modifiers:
+      ratio: 7.0
+      damage: 6.0
+  slot-6:
+    mythic-id: STRIKE_OF_FURY
+    enabled: true
+    timing:
+      cooldown: 45.0
+    display:
+      name: <gradient:#E0B0FF:#800080>분노의 강타</gradient>
+      description: 하늘 높이 뛰어올라 분노를 담아 수직으로 떨어지며 경로상의 모든 적을 분쇄합니다.
+      icon: TRIDENT
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 2.0
+      laistratio: 5.0
+passives:
+  passive-1:
+    type: BULWARK_INSTINCT
+    trigger: ON_DAMAGE_TAKEN
+    enabled: true
+    timing:
+      interval: 10.0
+      cooldown: 10.0
+      chance: 1.0
+    display:
+      name: <gradient:#ff0000:#ff582e>방벽의 본능</gradient>
+      description: 피격 시 발동하여 잠시 동안 받는 피해를 줄이고 전사의 투지를 일깨웁니다.
+      icon: ENDER_EYE
+      custom-model-data: 0
+    modifiers:
+      duration: 5.0

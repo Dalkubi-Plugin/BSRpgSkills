@@ -27,7 +27,7 @@ public class BSRpgSkillsExpansion extends PlaceholderExpansion {
                 case "weapon_name", "weapon_id" -> "";
                 case "active_count" -> "0";
                 default -> {
-                    if (params.startsWith("slot_")) yield "";
+                    if (params.startsWith("slot_")) yield handleSlot(player, null, params);
                     yield null;
                 }
             };
@@ -45,7 +45,7 @@ public class BSRpgSkillsExpansion extends PlaceholderExpansion {
         };
     }
 
-    private String handleSlot(Player player, CombatState state, String params) {
+    private String handleSlot(Player player, @Nullable CombatState state, String params) {
         String[] parts = params.split("_", 3);
         if (parts.length < 3) return "";
         int slot;
@@ -61,7 +61,11 @@ public class BSRpgSkillsExpansion extends PlaceholderExpansion {
         return switch (parts[2]) {
             case "name" -> s.getDisplayName();
             case "id" -> s.getMythicId();
-            case "cooldown" -> { double r = state.getRemainingCooldown(w.getWeaponId(), slot); yield r > 0 ? String.format("%.1f", r) : "0.0"; }
+            case "cooldown" -> {
+                double r = state != null ? state.getRemainingCooldown(w.getWeaponId(), slot) : 0.0;
+                yield r > 0 ? String.format("%.1f", r) : "0.0";
+            }
+            case "base_cooldown" -> String.format("%.1f", s.getCooldown());
             case "damage" -> String.valueOf(s.getDamage());
             case "enabled" -> String.valueOf(s.isEnabled());
             case "keybind" -> s.getKeybindLabel();

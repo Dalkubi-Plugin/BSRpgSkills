@@ -256,6 +256,23 @@ public class CombatManager {
         }
     }
 
+    public void refreshPassiveTimers() {
+        for (var entry : states.entrySet()) {
+            Player player = Bukkit.getPlayer(entry.getKey());
+            CombatState state = entry.getValue();
+            if (player == null || state == null || !state.isCombatMode()) {
+                continue;
+            }
+
+            state.cancelAllTimers();
+
+            WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(state.getCurrentWeaponId());
+            if (weapon != null) {
+                startPassiveTimers(player, state, weapon);
+            }
+        }
+    }
+
     /**
      * 이벤트 기반 패시브(ON_DAMAGE_DEALT, ON_DAMAGE_TAKEN)를 발동합니다.
      * 해당 트리거와 일치하는 패시브를 순회하며 chance/cooldown 검증 후 캐스팅합니다.
@@ -442,19 +459,6 @@ public class CombatManager {
         }
     }
 
-    private double getWeaponDamage(Player player) {
-        try {
-            MMOPlayerData playerData = MMOPlayerData.get(player.getUniqueId());
-            if (playerData != null) {
-                return playerData.getStatMap().getStat("ATTACK_DAMAGE");
-            }
-        } catch (Exception ignored) {
-            return 1.0;
-        }
-
-        return 1.0;
-    }
-
     private void sendMsg(Player player, String message) {
         if (message != null && !message.isEmpty()) {
             player.sendMessage(miniMessage.deserialize(message));
@@ -472,21 +476,17 @@ public class CombatManager {
         }
     }
 
-    private double toDouble(Object value) {
-        if (value instanceof Number number) {
-            return number.doubleValue();
-        }
-
-        try {
-            return Double.parseDouble(String.valueOf(value));
-        } catch (Exception exception) {
-            return 0.0;
-        }
-    }
-
+    /**
+     * 플레이어에게 연결된 전투 무기를 반환합니다.
+     *
+     * <p>{@code currentWeaponId}는 세션 단위로 유지되므로 전투 모드 OFF 상태에서도
+     * "마지막 사용 무기"를 반환합니다. 플레이스홀더/커맨드가 토글과 무관하게
+     * 일관된 무기 컨텍스트를 얻기 위해 사용됩니다.
+     * HUD처럼 전투 중일 때만 유효해야 하는 호출자는 별도로 {@link #isInCombatMode}를 확인하세요.
+     */
     public WeaponSkill getCurrentWeapon(Player player) {
         CombatState state = states.get(player.getUniqueId());
-        if (state == null || !state.isCombatMode() || state.getCurrentWeaponId() == null) {
+        if (state == null || state.getCurrentWeaponId() == null) {
             return null;
         }
 
@@ -498,9 +498,5 @@ public class CombatManager {
         return state != null
                 && state.isCombatMode()
                 && player.getInventory().getHeldItemSlot() == WEAPON_SLOT;
-    }
-
-    public boolean isHoldingWeapon(int slot) {
-        return slot == WEAPON_SLOT;
     }
 }

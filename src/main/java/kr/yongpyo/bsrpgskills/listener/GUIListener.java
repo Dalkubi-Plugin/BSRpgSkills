@@ -1,5 +1,6 @@
 package kr.yongpyo.bsrpgskills.listener;
 
+import io.papermc.paper.event.player.AsyncChatEvent;
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
 import kr.yongpyo.bsrpgskills.gui.GUIManager.PassiveEditHolder;
 import kr.yongpyo.bsrpgskills.gui.GUIManager.SkillEditHolder;
@@ -10,6 +11,7 @@ import kr.yongpyo.bsrpgskills.model.SkillSlot;
 import kr.yongpyo.bsrpgskills.model.WeaponSkill;
 import kr.yongpyo.bsrpgskills.util.ModifierValidator;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -18,7 +20,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.math.BigDecimal;
@@ -289,9 +290,8 @@ public class GUIListener implements Listener {
         player.sendMessage(mm.deserialize("<gray>" + label + "를 입력하세요. <dark_gray>(cancel = 취소)</dark_gray></gray>"));
     }
 
-    @SuppressWarnings("deprecation")
     @EventHandler
-    public void onChat(AsyncPlayerChatEvent event) {
+    public void onChat(AsyncChatEvent event) {
         Player player = event.getPlayer();
         InputCtx ctx = pending.remove(player.getUniqueId());
         if (ctx == null) {
@@ -299,7 +299,7 @@ public class GUIListener implements Listener {
         }
 
         event.setCancelled(true);
-        String input = event.getMessage().trim();
+        String input = PlainTextComponentSerializer.plainText().serialize(event.message()).trim();
 
         if ("cancel".equalsIgnoreCase(input)) {
             player.sendMessage(mm.deserialize("<gray>입력이 취소되었습니다.</gray>"));
@@ -452,6 +452,7 @@ public class GUIListener implements Listener {
 
     private void saveRefreshPassive(Player player, WeaponSkill weapon, int passiveIndex) {
         plugin.getWeaponSkillManager().save(weapon);
+        plugin.getCombatManager().refreshPassiveTimers();
         plugin.getGUIManager().openPassiveEditGUI(player, weapon, passiveIndex);
         click(player);
     }

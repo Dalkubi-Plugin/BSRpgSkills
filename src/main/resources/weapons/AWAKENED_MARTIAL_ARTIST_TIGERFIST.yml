@@ -1,111 +1,101 @@
-# ========================================
-#  AWAKENED_MARTIAL_ARTIST_TIGERFIST
-#  파일명 = MMOITEMS_ITEM_ID
-# ========================================
-
 mmo-type: SWORD
-display-name: "<#fca5a5>맹호의 권갑</#fca5a5>"
-
+display-name: <#fca5a5>맹호의 권갑</#fca5a5>
 skills:
   slot-1:
     mythic-id: MARTIAL_COMBO
     enabled: true
     timing:
-      cooldown: 0.3
+      cooldown: 0.8
     display:
-      name: "<gradient:#fff9ae:#f8e246>맹호 연권</gradient>"
-      description: "좌우 연타 후 강력한 마무리 일격으로 적을 밀어냅니다."
+      name: <gradient:#fff9ae:#f8e246>맹호 연권</gradient>
+      description: 좌우 연타 후 강력한 마무리 일격으로 적을 밀어냅니다.
       icon: STICK
       custom-model-data: 0
     modifiers:
-      damage: 3
-      ratio: 1.0
-
+      ratio: 1.25
+      damage: 3.0
   slot-2:
     mythic-id: GROUND_BLOW
     enabled: true
     timing:
-      cooldown: 2
+      cooldown: 18.0
     display:
-      name: "<gradient:#b5eeff:#4facfe>지면 강타</gradient>"
-      description: "땅을 내려쳐 주변 적을 끌어당기고 기절시킵니다."
+      name: <gradient:#b5eeff:#4facfe>지면 강타</gradient>
+      description: 땅을 내려쳐 주변 적을 끌어당기고 기절시킵니다.
       icon: FEATHER
       custom-model-data: 0
     modifiers:
-      damage: 0
       ratio: 1.0
-      stun_duration: 1.5
-
+      damage: 0.0
+      stun_duration: 0.5
   slot-3:
     mythic-id: MULTISTRIKE_UPPERCUT
     enabled: true
     timing:
-      cooldown: 3
+      cooldown: 25.0
     display:
-      name: "<gradient:#ffcc33:#ffb347>연속 승룡권</gradient>"
-      description: "연속 타격 후 공중으로 띄워 올리는 강력한 마무리 기술입니다."
+      name: <gradient:#ffcc33:#ffb347>연속 승룡권</gradient>
+      description: 연속 타격 후 공중으로 띄워 올리는 강력한 마무리 기술입니다.
       icon: OAK_FENCE
       custom-model-data: 0
     modifiers:
-      damage: 3
       ratio: 1.0
-      hit_count: 5
-
+      damage: 3.0
+      hit_count: 5.0
   slot-4:
     mythic-id: HEAVY_SHOCKWAVE
     enabled: true
     timing:
-      cooldown: 3
+      cooldown: 26.0
     display:
-      name: "<gradient:#91f48f:#38a333>중력 충격파</gradient>"
-      description: "주먹에서 충격파를 뿜어내 적을 밀쳐내고 균열을 남깁니다."
+      name: <gradient:#91f48f:#38a333>중력 충격파</gradient>
+      description: 주먹에서 충격파를 뿜어내 적을 밀쳐내고 균열을 남깁니다.
       icon: DIRT
       custom-model-data: 0
     modifiers:
-      damage: 0
-      ratio: 1.0
-      radius: 3
-
+      ratio: 2.5
+      damage: 2.0
+      radius: 3.0
   slot-5:
     mythic-id: SPINNING_BLOW
     enabled: true
     timing:
-      cooldown: 7
+      cooldown: 24.0
     display:
-      name: "<gradient:#ff7e5f:#feb47b>회전 폭풍격</gradient>"
-      description: "빠른 회전으로 주변 적을 베어내고 마지막 일격으로 넘어뜨립니다."
+      name: <gradient:#ff7e5f:#feb47b>회전 폭풍격</gradient>
+      description: 빠른 회전으로 주변 적을 베어내고 마지막 일격으로 넘어뜨립니다.
       icon: IRON_AXE
       custom-model-data: 0
     modifiers:
-      damage: 7
-      ratio: 1.0
-      spin_duration: 2
-
+      ratio: 3.0
+      damage: 3.0
+      spin_duration: 2.0
   slot-6:
     mythic-id: DRAGON_STRIKE
     enabled: true
     timing:
-      cooldown: 2
+      cooldown: 60.0
     display:
-      name: "<gradient:#da22ff:#9733ee>비룡의 자세</gradient>"
-      description: "자세를 바꾸며 짧은 강화 상태에 들어가 다음 스킬을 강화합니다."
+      name: <gradient:#da22ff:#9733ee>비룡의 자세</gradient>
+      description: 자세를 바꾸며 짧은 강화 상태에 들어가 다음 스킬을 강화합니다.
       icon: CLOCK
       custom-model-data: 0
     modifiers:
-      damage: 0
-      ratio: 1.0
-      stance_duration: 4
-
+      ratio: 0.5
+      damage: 2.0
+      laistratio: 10.0
 passives:
   passive-1:
     type: AGILE_STRIKER
+    trigger: TIMER
     enabled: true
     timing:
-      interval: 1
-      cooldown: 0
+      interval: 1.0
+      cooldown: 15.0
+      chance: 1.0
     display:
-      name: "<gradient:#ffffff:#e1ff8f>민첩한 타격</gradient>"
-      description: "전투 중 이동성과 연속 공격 성능을 강화합니다."
+      name: <gradient:#ffffff:#e1ff8f>민첩한 타격</gradient>
+      description: 전투 중 이동성과 연속 공격 성능을 강화합니다.
       icon: ENDER_EYE
       custom-model-data: 0
     modifiers: {}

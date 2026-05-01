@@ -1,0 +1,99 @@
+mmo-type: SWORD
+display-name: <gradient:#6a0000:#ff0202:#6a0000>황혼의 칼날</gradient>
+skills:
+  slot-1:
+    mythic-id: LETHAL_COMBO
+    enabled: true
+    timing:
+      cooldown: 0.4
+    display:
+      name: <gradient:#6a0000:#ff0202>치명적인 연격</gradient>
+      description: 이동 방향으로 파고들며 난무를 펼칩니다. 4타 시전 시 공중으로 도약하여 지면을 내리찍어 거대한 충격파를 일으킵니다.
+      icon: BLAZE_POWDER
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.25
+      damage: 4.0
+  slot-2:
+    mythic-id: RAVAGING_DASH
+    enabled: true
+    timing:
+      cooldown: 13.0
+    display:
+      name: <gradient:#6a0000:#ff0202>유린의 돌진</gradient>
+      description: 후방으로 짧게 물러난 뒤 순식간에 전방으로 돌진하며 경로상의 적들을 베어 넘깁니다.
+      icon: SPECTRAL_ARROW
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 4.0
+  slot-3:
+    mythic-id: CRIMSON_ARC
+    enabled: true
+    timing:
+      cooldown: 15.0
+    display:
+      name: <gradient:#6a0000:#ff0202>진홍빛 궤적</gradient>
+      description: 칼날에 마력을 집중해 붉은 검기를 발산하여 일직선상의 모든 적을 꿰뚫습니다.
+      icon: TNT
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.5
+      damage: 2.0
+  slot-4:
+    mythic-id: SHADOWQUAKE
+    enabled: true
+    timing:
+      cooldown: 15.0
+    display:
+      name: <gradient:#6a0000:#ff0202>그림자 진동</gradient>
+      description: 순식간에 5회의 연속 베기를 가한 후, 대지를 울리는 강력한 일격으로 적을 관통합니다.
+      icon: BOW
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      duration: 5.0
+      damage: 5.0
+  slot-5:
+    mythic-id: DEATH_BLOOM
+    enabled: true
+    timing:
+      cooldown: 22.0
+    display:
+      name: <gradient:#6a0000:#ff0202>죽음의 꽃</gradient>
+      description: 주변 모든 방향으로 단검을 뿌려 적을 밀어내고 광범위한 피해를 입힙니다.
+      icon: ARROW
+      custom-model-data: 0
+    modifiers:
+      ratio: 4.0
+      damage: 4.0
+  slot-6:
+    mythic-id: LAST_DANCE
+    enabled: true
+    timing:
+      cooldown: 55.0
+    display:
+      name: <gradient:#6a0000:#ff0202>최후의 무도</gradient>
+      description: 하늘 높이 도약한 뒤 지상의 목표를 향해 수직으로 낙하하며 치명적인 일격을 가합니다.
+      icon: TRIDENT
+      custom-model-data: 0
+    modifiers:
+      ratio: 0.5
+      damage: 2.0
+      laistratio: 12.5
+passives:
+  passive-1:
+    type: DEADLY_CALM
+    trigger: TIMER
+    enabled: true
+    timing:
+      interval: 10.0
+      cooldown: 10.0
+      chance: 1.0
+    display:
+      name: <gradient:#6a0000:#ff0202>매복의 일격</gradient>
+      description: 은밀하게 접근하여 가하는 첫 공격이 대상에게 치명적인 추가 피해를 입힙니다. (10초마다 발동)
+      icon: ENDER_EYE
+      custom-model-data: 0
+    modifiers:
+      damage: 1.5
