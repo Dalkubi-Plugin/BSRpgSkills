@@ -19,8 +19,6 @@ import java.util.logging.Level;
  */
 public class BSRpgSkills extends JavaPlugin {
 
-    private static BSRpgSkills instance;
-
     private WeaponSkillManager weaponSkillManager;
     private CombatManager combatManager;
     private GUIManager guiManager;
@@ -29,7 +27,6 @@ public class BSRpgSkills extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        instance = this;
         saveDefaultConfig();
         reloadRuntimeSettings();
 
@@ -61,7 +58,6 @@ public class BSRpgSkills extends JavaPlugin {
             weaponSkillManager.saveAll();
         }
         stopHudTask();
-        instance = null;
     }
 
     /**
@@ -112,10 +108,6 @@ public class BSRpgSkills extends JavaPlugin {
         if (debugMode) {
             getLogger().log(Level.INFO, "[DEBUG] " + message, throwable);
         }
-    }
-
-    public static BSRpgSkills getInstance() {
-        return instance;
     }
 
     public WeaponSkillManager getWeaponSkillManager() {

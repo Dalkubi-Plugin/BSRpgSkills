@@ -13,7 +13,7 @@ skills:
       icon: BLAZE_POWDER
       custom-model-data: 0
     modifiers:
-      ratio: 2.0
+      ratio: 1.3
       damage: 1.0
   slot-2:
     mythic-id: EVASIVE_SHOT
@@ -27,7 +27,7 @@ skills:
       custom-model-data: 0
     modifiers:
       ratio: 0.5
-      damage: 5.0
+      damage: 8.0
       projectile_count: 3.0
   slot-3:
     mythic-id: VOLLEY_OF_ARROWS
@@ -41,7 +41,7 @@ skills:
       custom-model-data: 0
     modifiers:
       ratio: 1.0
-      damage: 5.0
+      damage: 8.0
       radius: 3.0
   slot-4:
     mythic-id: RAPID_ARROWS
@@ -54,8 +54,8 @@ skills:
       icon: BOW
       custom-model-data: 0
     modifiers:
-      ratio: 1.0
-      damage: 0.0
+      ratio: 2.0
+      damage: 1.0
       rapid_count: 5.0
       finisher_count: 3.0
   slot-5:
@@ -69,8 +69,8 @@ skills:
       icon: TRIDENT
       custom-model-data: 0
     modifiers:
-      ratio: 3.5
-      damage: 0.5
+      ratio: 1.2
+      damage: 7.0
       fall_radius: 2.5
   slot-6:
     mythic-id: SHOT_OF_DESTRUCTION
@@ -83,7 +83,7 @@ skills:
       icon: TNT
       custom-model-data: 0
     modifiers:
-      ratio: 10.0
+      ratio: 12.0
       damage: 10.0
       pierce: 10.0
 passives:
@@ -92,7 +92,7 @@ passives:
     trigger: TIMER
     enabled: true
     timing:
-      interval: 10.0
+      interval: 0.1
       cooldown: 0.0
     display:
       name: <gradient:#ffffff:#00ff2a>매복의 일격</gradient>

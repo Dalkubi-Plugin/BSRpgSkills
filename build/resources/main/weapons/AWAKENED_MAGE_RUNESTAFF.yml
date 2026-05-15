@@ -12,7 +12,7 @@ skills:
       icon: STICK
       custom-model-data: 0
     modifiers:
-      ratio: 1.75
+      ratio: 1.4
       damage: 3.5
       burnduration: 3.0
   slot-2:
@@ -26,7 +26,7 @@ skills:
       icon: FEATHER
       custom-model-data: 0
     modifiers:
-      ratio: 1.0
+      ratio: 0.25
       damage: 2.5
       stunduration: 2.0
   slot-3:
@@ -41,7 +41,7 @@ skills:
       custom-model-data: 0
     modifiers:
       ratio: 1.0
-      damage: 3.0
+      damage: 3.5
       burnduration: 3.0
   slot-4:
     mythic-id: CRYO_PRISON
@@ -54,8 +54,8 @@ skills:
       icon: ICE
       custom-model-data: 0
     modifiers:
-      ratio: 1.0
-      damage: 0.0
+      ratio: 0.15
+      damage: 5.0
       freezeduration: 3.0
   slot-5:
     mythic-id: HAILPIERCER
@@ -68,14 +68,14 @@ skills:
       icon: TRIDENT
       custom-model-data: 0
     modifiers:
-      ratio: 8.5
+      ratio: 8.0
       damage: 3.0
       slowduration: 4.0
   slot-6:
     mythic-id: METEOR_OF_DOOM
     enabled: true
     timing:
-      cooldown: 90.0
+      cooldown: 70.0
     display:
       name: <gradient:#da22ff:#9733ee>파멸의 유성</gradient>
       description: 공중에 유성을 소환해 광역 화염 피해를 남깁니다.
@@ -91,12 +91,12 @@ passives:
     trigger: TIMER
     enabled: true
     timing:
-      interval: 10.0
-      cooldown: 7.0
+      interval: 1.0
+      cooldown: 15.0
     display:
       name: <gradient:#ffffff:#e1ff8f>마나 보호막</gradient>
       description: 주기적으로 보호막을 재정비하여 다음 공격 한 번을 막아냅니다.
       icon: ENDER_EYE
       custom-model-data: 0
     modifiers:
-      barriercooldown: 7.0
+      barriercooldown: 15.0

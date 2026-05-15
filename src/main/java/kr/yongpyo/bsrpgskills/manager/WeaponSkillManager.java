@@ -50,8 +50,13 @@ public class WeaponSkillManager {
         }
 
         for (String resourceName : DEFAULTS) {
-            if (!new File(weaponsFolder, resourceName).exists()) {
+            if (new File(weaponsFolder, resourceName).exists()) {
+                continue;
+            }
+            try {
                 plugin.saveResource("weapons/" + resourceName, false);
+            } catch (IllegalArgumentException exception) {
+                plugin.getLogger().warning("기본 무기 리소스를 찾을 수 없어 건너뜁니다: " + resourceName);
             }
         }
 

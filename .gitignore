@@ -4,6 +4,7 @@
 /target/
 
 # Gradle
+.gradle/
 /.gradle/
 /.gradle-home/
 !gradle/wrapper/gradle-wrapper.jar

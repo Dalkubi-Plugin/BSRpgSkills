@@ -26,7 +26,7 @@ import java.util.Locale;
 public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> SUBCOMMANDS = List.of(
-            "editor", "reload", "list", "info", "toggle", "save", "debug", "debuglog"
+            "editor", "reload", "list", "info", "toggle", "save", "debug", "debuglog", "validate"
     );
 
     private final BSRpgSkills plugin;
@@ -64,6 +64,7 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
             case "save" -> handleSave(sender);
             case "debug" -> handleDebug(sender);
             case "debuglog" -> handleDebugLog(sender);
+            case "validate" -> handleValidate(sender);
             default -> {
                 sendUsage(sender, label);
                 yield true;
@@ -112,6 +113,8 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
         plugin.reloadRuntimeSettings();
         plugin.getWeaponSkillManager().loadAll();
         plugin.restartHudTask();
+        // 이미 전투 중인 플레이어의 패시브 타이머를 새 PassiveSlot 인스턴스로 재바인딩합니다.
+        plugin.getCombatManager().refreshPassiveTimers();
         sender.sendMessage(mm.deserialize("<green>BSRpgSkills 리로드가 완료되었습니다.</green>"));
         return true;
     }
@@ -244,6 +247,96 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    /**
+     * 등록된 모든 무기 설정의 구조와 값을 검증해 문제 목록을 리포트합니다.
+     * YAML 파싱 자체는 loadAll()에서 이미 수행되므로, 여기서는 메모리에 적재된
+     * WeaponSkill 인스턴스를 기준으로 의미적 일관성만 검사합니다.
+     */
+    private boolean handleValidate(CommandSender sender) {
+        if (!sender.hasPermission("bsrpgskills.admin")) {
+            deny(sender);
+            return true;
+        }
+
+        var weapons = plugin.getWeaponSkillManager().getAllWeapons();
+        if (weapons.isEmpty()) {
+            sender.sendMessage(mm.deserialize("<gray>검증할 무기가 없습니다.</gray>"));
+            return true;
+        }
+
+        int totalIssues = 0;
+        int weaponsWithIssues = 0;
+        sender.sendMessage(mm.deserialize("<gold>--- BSRpgSkills 설정 검증 ---</gold>"));
+
+        for (WeaponSkill weapon : weapons) {
+            List<String> issues = new ArrayList<>();
+
+            if (weapon.getMmoType() == null || weapon.getMmoType().isBlank()) {
+                issues.add("mmo-type이 비어 있음");
+            }
+            if (weapon.getDisplayName() == null || weapon.getDisplayName().isBlank()) {
+                issues.add("display-name이 비어 있음");
+            }
+
+            for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
+                SkillSlot skill = weapon.getSkill(i);
+                if (skill == null) {
+                    continue;
+                }
+                if (skill.isEnabled() && skill.getMythicId().isBlank()) {
+                    issues.add("슬롯 " + i + ": enabled=true이지만 mythic-id가 비어 있음");
+                }
+                if (skill.getCooldown() < 0) {
+                    issues.add("슬롯 " + i + ": cooldown 음수 (" + skill.getCooldown() + ")");
+                }
+                for (var entry : skill.getModifiers().entrySet()) {
+                    Double value = entry.getValue();
+                    if (value == null || !Double.isFinite(value)) {
+                        issues.add("슬롯 " + i + ": modifier '" + entry.getKey() + "' 값이 비정상");
+                    }
+                }
+            }
+
+            for (PassiveSlot passive : weapon.getPassives()) {
+                String label = "패시브 #" + passive.getIndex();
+                if (passive.getType().isBlank()) {
+                    issues.add(label + ": type이 비어 있음");
+                }
+                if (passive.getTriggerType() == kr.yongpyo.bsrpgskills.model.PassiveTrigger.TIMER
+                        && passive.getTimer() < 0.1) {
+                    issues.add(label + ": TIMER인데 interval이 0.1초 미만 (" + passive.getTimer() + ")");
+                }
+                if (passive.getCooldown() < 0) {
+                    issues.add(label + ": cooldown 음수 (" + passive.getCooldown() + ")");
+                }
+                for (var entry : passive.getModifiers().entrySet()) {
+                    Double value = entry.getValue();
+                    if (value == null || !Double.isFinite(value)) {
+                        issues.add(label + ": modifier '" + entry.getKey() + "' 값이 비정상");
+                    }
+                }
+            }
+
+            if (issues.isEmpty()) {
+                sender.sendMessage(mm.deserialize("<green>[OK]</green> <white>" + weapon.getWeaponId() + "</white>"));
+            } else {
+                weaponsWithIssues++;
+                totalIssues += issues.size();
+                sender.sendMessage(mm.deserialize("<red>[" + issues.size() + " 문제]</red> <white>"
+                        + weapon.getWeaponId() + "</white>"));
+                for (String issue : issues) {
+                    sender.sendMessage(mm.deserialize("  <gray>-</gray> <yellow>" + issue + "</yellow>"));
+                }
+            }
+        }
+
+        sender.sendMessage(mm.deserialize("<gold>--- 검증 완료: "
+                + "<white>" + weapons.size() + "</white>개 무기, "
+                + "<white>" + weaponsWithIssues + "</white>개에 문제 있음, "
+                + "<white>" + totalIssues + "</white>개 문제 발견 ---</gold>"));
+        return true;
+    }
+
     private void sendUsage(CommandSender sender, String label) {
         sender.sendMessage(mm.deserialize("<gold>사용 가능한 명령어</gold>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " editor</gray>"));
@@ -254,6 +347,7 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
         sender.sendMessage(mm.deserialize("<gray>/" + label + " save</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " debug</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " debuglog</gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " validate</gray>"));
     }
 
     private void sendDebugReport(CommandSender viewer, Player target) {
