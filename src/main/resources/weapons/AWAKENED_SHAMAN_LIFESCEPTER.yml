@@ -4,6 +4,7 @@ skills:
   slot-1:
     mythic-id: PRIMAL_COMBO
     enabled: true
+    max-level: 1
     timing:
       cooldown: 0.9
     display:
@@ -18,6 +19,7 @@ skills:
   slot-2:
     mythic-id: ECHO_STEP
     enabled: true
+    max-level: 5
     timing:
       cooldown: 20.0
     display:
@@ -29,9 +31,31 @@ skills:
       ratio: 0.0
       damage: 0.0
       heal: 5.0
+    levels:
+      level-2:
+        cooldown: 18.4
+        display:
+          lore:
+          - <gray>강화 I ▶ 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 17.0
+        display:
+          lore:
+          - <gray>강화 II ▶ 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 15.6
+        display:
+          lore:
+          - <gray>강화 III ▶ 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 14.4
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 쿨 {cooldown}초</gold>
   slot-3:
     mythic-id: RITUAL_TOTEM
     enabled: true
+    max-level: 5
     timing:
       cooldown: 18.0
     display:
@@ -43,9 +67,31 @@ skills:
       ratio: 0.9
       damage: 0.0
       heal: 0.75
+    levels:
+      level-2:
+        cooldown: 16.56
+        display:
+          lore:
+          - <gray>강화 I ▶ 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 15.3
+        display:
+          lore:
+          - <gray>강화 II ▶ 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 14.04
+        display:
+          lore:
+          - <gray>강화 III ▶ 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 12.96
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 쿨 {cooldown}초</gold>
   slot-4:
     mythic-id: EARTHEN_EMBRACE
     enabled: true
+    max-level: 1
     timing:
       cooldown: 28.0
     display:
@@ -59,6 +105,7 @@ skills:
   slot-5:
     mythic-id: ANCESTRAL_HANDS
     enabled: true
+    max-level: 5
     timing:
       cooldown: 45.0
     display:
@@ -70,9 +117,35 @@ skills:
       ratio: 2.0
       damage: 2.0
       heal: 1.0
+    levels:
+      level-2:
+        cooldown: 41.4
+        damage: 2.4
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 38.25
+        damage: 2.8
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 35.1
+        damage: 3.4
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 32.4
+        damage: 4.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-6:
     mythic-id: STANCE_SWITCH
     enabled: true
+    max-level: 1
     timing:
       cooldown: 3.5
     display:

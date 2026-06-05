@@ -4,6 +4,7 @@ skills:
   slot-1:
     mythic-id: SORCERY_COMBO
     enabled: true
+    max-level: 1
     timing:
       cooldown: 0.9
     display:
@@ -18,6 +19,7 @@ skills:
   slot-2:
     mythic-id: TELEPORT_STRIKE
     enabled: true
+    max-level: 5
     timing:
       cooldown: 17.0
     display:
@@ -29,25 +31,77 @@ skills:
       ratio: 0.25
       damage: 2.5
       stunduration: 2.0
+    levels:
+      level-2:
+        cooldown: 15.64
+        damage: 3.0
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 14.45
+        damage: 3.5
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 13.26
+        damage: 4.25
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 12.24
+        damage: 5.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-3:
     mythic-id: BLAZING_BARRAGE
     enabled: true
+    max-level: 5
     timing:
-      cooldown: 13.5
+      cooldown: 12.5
     display:
       name: <gradient:#ffcc33:#ffb347>화염 연쇄 포격</gradient>
       description: 전방에 연속 폭발을 일으킨 뒤 거대한 화염구를 쏘아 마무리합니다.
       icon: BLAZE_ROD
       custom-model-data: 0
     modifiers:
-      ratio: 1.0
-      damage: 3.5
+      ratio: 1.5
+      damage: 4.0
       burnduration: 3.0
+    levels:
+      level-2:
+        cooldown: 11.5
+        damage: 4.8
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 10.63
+        damage: 5.6
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 9.75
+        damage: 6.8
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 9.0
+        damage: 8.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-4:
     mythic-id: CRYO_PRISON
     enabled: true
+    max-level: 5
     timing:
-      cooldown: 23.0
+      cooldown: 18.0
     display:
       name: <gradient:#91f48f:#38a333>빙결 감옥</gradient>
       description: 적을 얼음 감옥에 가두고 추가 냉기 피해를 누적시킵니다.
@@ -57,11 +111,37 @@ skills:
       ratio: 0.15
       damage: 5.0
       freezeduration: 3.0
+    levels:
+      level-2:
+        cooldown: 16.56
+        damage: 6.0
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 15.3
+        damage: 7.0
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 14.04
+        damage: 8.5
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 12.96
+        damage: 10.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-5:
     mythic-id: HAILPIERCER
     enabled: true
+    max-level: 5
     timing:
-      cooldown: 27.0
+      cooldown: 20.0
     display:
       name: <gradient:#ff7e5f:#feb47b>서리 창 관통</gradient>
       description: 적을 꿰뚫는 거대한 냉기 창을 발사하고 뒤에 남은 파편이 다시 터집니다.
@@ -71,11 +151,37 @@ skills:
       ratio: 8.0
       damage: 3.0
       slowduration: 4.0
+    levels:
+      level-2:
+        cooldown: 18.4
+        damage: 3.6
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 17.0
+        damage: 4.2
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 15.6
+        damage: 5.1
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 14.4
+        damage: 6.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-6:
     mythic-id: METEOR_OF_DOOM
     enabled: true
+    max-level: 5
     timing:
-      cooldown: 70.0
+      cooldown: 60.0
     display:
       name: <gradient:#da22ff:#9733ee>파멸의 유성</gradient>
       description: 공중에 유성을 소환해 광역 화염 피해를 남깁니다.
@@ -85,6 +191,31 @@ skills:
       ratio: 15.0
       damage: 10.0
       burnduration: 3.0
+    levels:
+      level-2:
+        cooldown: 55.2
+        damage: 12.0
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 51.0
+        damage: 14.0
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 46.8
+        damage: 17.0
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 43.2
+        damage: 20.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
 passives:
   passive-1:
     type: MANA_BARRIER

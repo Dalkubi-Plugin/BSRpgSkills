@@ -2,9 +2,12 @@ package kr.yongpyo.bsrpgskills;
 
 import kr.yongpyo.bsrpgskills.command.BSRpgSkillsCommand;
 import kr.yongpyo.bsrpgskills.gui.GUIManager;
+import kr.yongpyo.bsrpgskills.hook.WorldGuardHook;
 import kr.yongpyo.bsrpgskills.listener.CombatListener;
 import kr.yongpyo.bsrpgskills.listener.GUIListener;
 import kr.yongpyo.bsrpgskills.manager.CombatManager;
+import kr.yongpyo.bsrpgskills.manager.PlayerSkillManager;
+import kr.yongpyo.bsrpgskills.manager.ResetItemManager;
 import kr.yongpyo.bsrpgskills.manager.WeaponSkillManager;
 import kr.yongpyo.bsrpgskills.placeholder.BSRpgSkillsExpansion;
 import kr.yongpyo.bsrpgskills.util.CombatHudTask;
@@ -20,10 +23,27 @@ import java.util.logging.Level;
 public class BSRpgSkills extends JavaPlugin {
 
     private WeaponSkillManager weaponSkillManager;
+    private PlayerSkillManager playerSkillManager;
     private CombatManager combatManager;
     private GUIManager guiManager;
+    private ResetItemManager resetItemManager;
     private CombatHudTask hudTask;
     private boolean debugMode;
+    private boolean worldGuardEnabled;
+
+    @Override
+    public void onLoad() {
+        // WorldGuard 커스텀 플래그는 반드시 onLoad에서 등록해야 합니다.
+        if (Bukkit.getPluginManager().getPlugin("WorldGuard") != null) {
+            try {
+                WorldGuardHook.registerFlag();
+                worldGuardEnabled = true;
+                getLogger().info("WorldGuard 연동 활성화: bsrpgskills-combat 플래그 등록 완료");
+            } catch (Throwable throwable) {
+                getLogger().warning("WorldGuard 플래그 등록 실패: " + throwable.getMessage());
+            }
+        }
+    }
 
     @Override
     public void onEnable() {
@@ -31,11 +51,17 @@ public class BSRpgSkills extends JavaPlugin {
         reloadRuntimeSettings();
 
         weaponSkillManager = new WeaponSkillManager(this);
+        playerSkillManager = new PlayerSkillManager(this);
         combatManager = new CombatManager(this);
         guiManager = new GUIManager(this);
+        resetItemManager = new ResetItemManager(this);
 
         weaponSkillManager.loadAll();
         combatManager.warmUpHandlerCache();
+
+        for (var online : Bukkit.getOnlinePlayers()) {
+            playerSkillManager.load(online.getUniqueId());
+        }
 
         Bukkit.getPluginManager().registerEvents(new CombatListener(this), this);
         Bukkit.getPluginManager().registerEvents(new GUIListener(this), this);
@@ -56,6 +82,9 @@ public class BSRpgSkills extends JavaPlugin {
     public void onDisable() {
         if (weaponSkillManager != null) {
             weaponSkillManager.saveAll();
+        }
+        if (playerSkillManager != null) {
+            playerSkillManager.saveAll();
         }
         stopHudTask();
     }
@@ -85,12 +114,32 @@ public class BSRpgSkills extends JavaPlugin {
         hudTask = null;
     }
 
+    /**
+     * Reload 진입점.
+     *
+     * 안전 규칙(필수 준수):
+     * 1. PlayerSkillManager는 절대 재생성하지 않는다 (캐시 보존).
+     * 2. PlayerSkillManager 내부 캐시는 절대 clear()하지 않는다.
+     * 3. 무기 yml만 다시 읽으며 플레이어 진행도 캐시는 그대로 유지된다.
+     *
+     * 처리 순서:
+     *  - 현재 캐시된 플레이어 데이터를 먼저 saveAll()로 디스크에 flush (미저장 데이터 보호).
+     *  - 무기 reload는 handleReload에서 미리 수행되어 있다.
+     *  - 새로 읽은 무기 정의 기준으로 in-memory 레벨 값을 클램프하고 변경분만 다시 디스크에 기록한다.
+     */
     public void restartHudTask() {
         stopHudTask();
         reloadRuntimeSettings();
+        if (resetItemManager != null) {
+            resetItemManager.reload();
+        }
         combatManager.reloadMessages();
         combatManager.warmUpHandlerCache();
         combatManager.refreshPassiveTimers();
+        if (playerSkillManager != null) {
+            playerSkillManager.saveAll();
+            playerSkillManager.clampToWeaponDefinitions();
+        }
         startHudTask();
     }
 
@@ -114,11 +163,23 @@ public class BSRpgSkills extends JavaPlugin {
         return weaponSkillManager;
     }
 
+    public PlayerSkillManager getPlayerSkillManager() {
+        return playerSkillManager;
+    }
+
     public CombatManager getCombatManager() {
         return combatManager;
     }
 
     public GUIManager getGUIManager() {
         return guiManager;
+    }
+
+    public ResetItemManager getResetItemManager() {
+        return resetItemManager;
+    }
+
+    public boolean isWorldGuardEnabled() {
+        return worldGuardEnabled;
     }
 }

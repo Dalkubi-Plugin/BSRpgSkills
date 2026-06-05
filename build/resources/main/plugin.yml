@@ -13,17 +13,17 @@ depend:
 softdepend:
   - PlaceholderAPI
   - MMOCore
+  - WorldGuard
 
 commands:
   bsrpgskills:
-    description: 'BSRpgSkills 관리 명령어'
-    usage: '/<command> <editor|reload|list|info|toggle|save|debug|debuglog>'
-    permission: bsrpgskills.admin
+    description: 'BSRpgSkills 관리/스킬 명령어'
+    usage: '/<command> <editor|reload|list|info|save|debug|debuglog|validate|point|setlevel|skills>'
 
 permissions:
   bsrpgskills.admin:
-    description: '관리자 명령어 사용'
+    description: '관리자 명령어(editor/reload/save/info/list/validate/point/setlevel/debug 등)'
     default: op
   bsrpgskills.use:
-    description: '전투 모드 사용'
+    description: '전투 모드 + 스킬 강화 GUI 접근'
     default: true

@@ -3,21 +3,27 @@ package kr.yongpyo.bsrpgskills.command;
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
 import kr.yongpyo.bsrpgskills.model.CombatState;
 import kr.yongpyo.bsrpgskills.model.PassiveSlot;
+import kr.yongpyo.bsrpgskills.model.PlayerSkillData;
 import kr.yongpyo.bsrpgskills.model.SkillSlot;
 import kr.yongpyo.bsrpgskills.model.WeaponSkill;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * Paper/Bukkit 기본 명령 API 기반의 BSRpgSkills 명령 처리기입니다.
@@ -26,8 +32,11 @@ import java.util.Locale;
 public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
 
     private static final List<String> SUBCOMMANDS = List.of(
-            "editor", "reload", "list", "info", "toggle", "save", "debug", "debuglog", "validate"
+            "editor", "reload", "list", "info", "save", "debug", "debuglog", "validate",
+            "point", "setlevel", "skills", "cooldown", "resetitem"
     );
+
+    private static final List<String> POINT_ACTIONS = List.of("give", "take", "check", "reset");
 
     private final BSRpgSkills plugin;
     private final MiniMessage mm = MiniMessage.miniMessage();
@@ -60,11 +69,15 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
             case "reload" -> handleReload(sender);
             case "list" -> handleList(sender);
             case "info" -> handleInfo(sender, args);
-            case "toggle" -> handleToggle(sender);
             case "save" -> handleSave(sender);
             case "debug" -> handleDebug(sender);
             case "debuglog" -> handleDebugLog(sender);
             case "validate" -> handleValidate(sender);
+            case "point" -> handlePoint(sender, args);
+            case "setlevel" -> handleSetLevel(sender, args);
+            case "skills" -> handleSkillsGui(sender);
+            case "cooldown" -> handleCooldown(sender, args);
+            case "resetitem" -> handleResetItem(sender, args);
             default -> {
                 sendUsage(sender, label);
                 yield true;
@@ -78,15 +91,74 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
             return filterByPrefix(availableSubcommands(sender), args[0]);
         }
 
+        String sub = args[0].toLowerCase(Locale.ROOT);
+
         if (args.length == 2 && "info".equalsIgnoreCase(args[0]) && sender.hasPermission("bsrpgskills.admin")) {
-            List<String> weaponIds = plugin.getWeaponSkillManager().getAllWeapons().stream()
-                    .map(WeaponSkill::getWeaponId)
-                    .sorted()
-                    .toList();
-            return filterByPrefix(weaponIds, args[1]);
+            return filterByPrefix(allWeaponIds(), args[1]);
+        }
+
+        if ("point".equals(sub) && sender.hasPermission("bsrpgskills.admin")) {
+            if (args.length == 2) {
+                return filterByPrefix(POINT_ACTIONS, args[1]);
+            }
+            if (args.length == 3) {
+                return filterByPrefix(onlinePlayerNames(), args[2]);
+            }
+        }
+
+        if ("setlevel".equals(sub) && sender.hasPermission("bsrpgskills.admin")) {
+            if (args.length == 2) {
+                return filterByPrefix(onlinePlayerNames(), args[1]);
+            }
+            if (args.length == 3) {
+                return filterByPrefix(allWeaponIds(), args[2]);
+            }
+            if (args.length == 4) {
+                return filterByPrefix(slotNumbers(), args[3]);
+            }
+        }
+
+        if ("cooldown".equals(sub) && sender.hasPermission("bsrpgskills.admin")) {
+            if (args.length == 2) {
+                return filterByPrefix(List.of("reset"), args[1]);
+            }
+            if (args.length == 3) {
+                return filterByPrefix(onlinePlayerNames(), args[2]);
+            }
+            if (args.length == 4) {
+                return filterByPrefix(slotNumbers(), args[3]);
+            }
+        }
+
+        if ("resetitem".equals(sub) && sender.hasPermission("bsrpgskills.admin")) {
+            if (args.length == 2) {
+                return filterByPrefix(List.of("give"), args[1]);
+            }
+            if (args.length == 3) {
+                return filterByPrefix(onlinePlayerNames(), args[2]);
+            }
         }
 
         return List.of();
+    }
+
+    private List<String> allWeaponIds() {
+        return plugin.getWeaponSkillManager().getAllWeapons().stream()
+                .map(WeaponSkill::getWeaponId)
+                .sorted()
+                .toList();
+    }
+
+    private List<String> onlinePlayerNames() {
+        return Bukkit.getOnlinePlayers().stream().map(Player::getName).sorted().toList();
+    }
+
+    private List<String> slotNumbers() {
+        List<String> out = new ArrayList<>();
+        for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
+            out.add(String.valueOf(i));
+        }
+        return out;
     }
 
     private boolean handleEditor(CommandSender sender) {
@@ -189,20 +261,6 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
                             ? " <gray>| modifiers:" + passive.getModifiers() + "</gray>"
                             : "")));
         }
-        return true;
-    }
-
-    private boolean handleToggle(CommandSender sender) {
-        if (!sender.hasPermission("bsrpgskills.use")) {
-            deny(sender);
-            return true;
-        }
-        if (!(sender instanceof Player player)) {
-            sender.sendMessage(mm.deserialize("<red>플레이어만 사용할 수 있는 명령어입니다.</red>"));
-            return true;
-        }
-
-        plugin.getCombatManager().handleFKey(player);
         return true;
     }
 
@@ -337,17 +395,363 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
         return true;
     }
 
+    private boolean handlePoint(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("bsrpgskills.admin")) {
+            deny(sender);
+            return true;
+        }
+        if (args.length < 2) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills point give <player> <amount></red>"));
+            return true;
+        }
+
+        String action = args[1].toLowerCase(Locale.ROOT);
+        if ("give".equals(action)) {
+            return handlePointGive(sender, args);
+        }
+        if ("check".equals(action)) {
+            return handlePointCheck(sender, args);
+        }
+        if ("take".equals(action)) {
+            return handlePointTake(sender, args);
+        }
+        if ("reset".equals(action)) {
+            return handlePointReset(sender, args);
+        }
+
+        sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills point give|take|check|reset ...</red>"));
+        return true;
+    }
+
+    private boolean handlePointReset(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills point reset <player> [weapon] [slot]</red>"));
+            return true;
+        }
+
+        OfflinePlayer target = resolvePlayer(args[2]);
+        if (target == null || target.getUniqueId() == null) {
+            sender.sendMessage(mm.deserialize("<red>플레이어를 찾지 못했습니다: " + args[2] + "</red>"));
+            return true;
+        }
+
+        PlayerSkillData data = plugin.getPlayerSkillManager().get(target.getUniqueId());
+        int refunded;
+
+        if (args.length >= 4) {
+            String weaponId = args[3];
+            if (!plugin.getWeaponSkillManager().hasWeapon(weaponId)) {
+                sender.sendMessage(mm.deserialize("<red>무기를 찾지 못했습니다: " + weaponId + "</red>"));
+                return true;
+            }
+
+            if (args.length >= 5) {
+                int slot = parsePositiveInt(args[4]);
+                if (slot < 1 || slot > WeaponSkill.MAX_SLOTS) {
+                    sender.sendMessage(mm.deserialize("<red>슬롯 번호는 1~" + WeaponSkill.MAX_SLOTS + " 사이여야 합니다.</red>"));
+                    return true;
+                }
+                refunded = data.reset(weaponId, slot);
+                sender.sendMessage(mm.deserialize("<green>" + target.getName() + " 의 " + weaponId
+                        + " 슬롯 " + slot + " 레벨을 1로 초기화 (포인트 " + refunded + " 환불)</green>"));
+            } else {
+                refunded = data.resetWeapon(weaponId);
+                sender.sendMessage(mm.deserialize("<green>" + target.getName() + " 의 " + weaponId
+                        + " 모든 슬롯을 초기화 (포인트 " + refunded + " 환불)</green>"));
+            }
+        } else {
+            refunded = data.resetAll();
+            sender.sendMessage(mm.deserialize("<green>" + target.getName()
+                    + " 의 모든 스킬 레벨을 초기화 (포인트 " + refunded + " 환불)</green>"));
+        }
+
+        plugin.getPlayerSkillManager().save(target.getUniqueId());
+        return true;
+    }
+
+    private boolean handlePointGive(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills point give <player> <amount></red>"));
+            return true;
+        }
+
+        OfflinePlayer target = resolvePlayer(args[2]);
+        if (target == null || target.getUniqueId() == null) {
+            sender.sendMessage(mm.deserialize("<red>플레이어를 찾지 못했습니다: " + args[2] + "</red>"));
+            return true;
+        }
+
+        int amount = parsePositiveInt(args[3]);
+        if (amount <= 0) {
+            sender.sendMessage(mm.deserialize("<red>양수만 지급할 수 있습니다.</red>"));
+            return true;
+        }
+
+        PlayerSkillData data = plugin.getPlayerSkillManager().get(target.getUniqueId());
+        data.addPoints(amount);
+        plugin.getPlayerSkillManager().save(target.getUniqueId());
+
+        sender.sendMessage(mm.deserialize("<green>" + target.getName()
+                + " 에게 공용 스킬 포인트 " + amount + " 지급 (보유 " + data.getPoints() + ")</green>"));
+        return true;
+    }
+
+    private boolean handlePointTake(CommandSender sender, String[] args) {
+        if (args.length < 4) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills point take <player> <amount></red>"));
+            return true;
+        }
+
+        OfflinePlayer target = resolvePlayer(args[2]);
+        if (target == null || target.getUniqueId() == null) {
+            sender.sendMessage(mm.deserialize("<red>플레이어를 찾지 못했습니다: " + args[2] + "</red>"));
+            return true;
+        }
+
+        int amount = parsePositiveInt(args[3]);
+        if (amount <= 0) {
+            sender.sendMessage(mm.deserialize("<red>양수만 입력할 수 있습니다.</red>"));
+            return true;
+        }
+
+        PlayerSkillData data = plugin.getPlayerSkillManager().get(target.getUniqueId());
+        int before = data.getPoints();
+        int actual = Math.min(amount, before);
+        data.addPoints(-actual);
+        plugin.getPlayerSkillManager().save(target.getUniqueId());
+
+        sender.sendMessage(mm.deserialize("<green>" + target.getName()
+                + " 의 공용 스킬 포인트 " + actual + " 차감 (보유 " + data.getPoints() + ")</green>"));
+        if (actual < amount) {
+            sender.sendMessage(mm.deserialize("<yellow>보유 포인트가 부족하여 " + actual + " 만 차감되었습니다.</yellow>"));
+        }
+        return true;
+    }
+
+    private boolean handlePointCheck(CommandSender sender, String[] args) {
+        if (args.length < 3) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills point check <player> [weapon]</red>"));
+            return true;
+        }
+
+        OfflinePlayer target = resolvePlayer(args[2]);
+        if (target == null || target.getUniqueId() == null) {
+            sender.sendMessage(mm.deserialize("<red>플레이어를 찾지 못했습니다: " + args[2] + "</red>"));
+            return true;
+        }
+
+        PlayerSkillData data = plugin.getPlayerSkillManager().get(target.getUniqueId());
+        String filterWeapon = args.length >= 4 ? args[3] : null;
+
+        sender.sendMessage(mm.deserialize("<gold>--- " + target.getName() + " 스킬 현황 ---</gold>"));
+        sender.sendMessage(mm.deserialize("<gray>공용 스킬 포인트:</gray> <yellow>" + data.getPoints() + "</yellow>"));
+        for (WeaponSkill weapon : plugin.getWeaponSkillManager().getAllWeapons()) {
+            if (filterWeapon != null && !filterWeapon.equalsIgnoreCase(weapon.getWeaponId())) {
+                continue;
+            }
+            boolean printedHeader = false;
+            for (int i = 1; i <= WeaponSkill.MAX_SLOTS; i++) {
+                SkillSlot skill = weapon.getSkill(i);
+                if (skill == null || !skill.isValid()) {
+                    continue;
+                }
+                int level = data.getLevel(weapon.getWeaponId(), i);
+                if (level == 1) {
+                    continue;
+                }
+                if (!printedHeader) {
+                    sender.sendMessage(mm.deserialize("<white>" + weapon.getWeaponId() + "</white>"));
+                    printedHeader = true;
+                }
+                sender.sendMessage(mm.deserialize("  <gray>슬롯 " + i + " " + skill.getDisplayName()
+                        + "</gray> <white>Lv " + level + "/" + skill.getMaxLevel()
+                        + "</white>"));
+            }
+        }
+        return true;
+    }
+
+    private boolean handleSkillsGui(CommandSender sender) {
+        if (!sender.hasPermission("bsrpgskills.use")) {
+            deny(sender);
+            return true;
+        }
+        if (!(sender instanceof Player player)) {
+            sender.sendMessage(mm.deserialize("<red>플레이어만 사용할 수 있는 명령어입니다.</red>"));
+            return true;
+        }
+        if (!plugin.getCombatManager().isInCombatMode(player)) {
+            sender.sendMessage(mm.deserialize("<red>전투 모드에서만 사용할 수 있습니다.</red>"));
+            return true;
+        }
+
+        WeaponSkill weapon = plugin.getCombatManager().getCurrentWeapon(player);
+        if (weapon == null) {
+            sender.sendMessage(mm.deserialize("<red>현재 무기를 인식하지 못했습니다.</red>"));
+            return true;
+        }
+        plugin.getGUIManager().openSkillUpgradeGUI(player, weapon);
+        return true;
+    }
+
+    private boolean handleSetLevel(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("bsrpgskills.admin")) {
+            deny(sender);
+            return true;
+        }
+        if (args.length < 5) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills setlevel <player> <weapon> <slot> <level></red>"));
+            return true;
+        }
+
+        OfflinePlayer target = resolvePlayer(args[1]);
+        if (target == null || target.getUniqueId() == null) {
+            sender.sendMessage(mm.deserialize("<red>플레이어를 찾지 못했습니다: " + args[1] + "</red>"));
+            return true;
+        }
+
+        String weaponId = args[2];
+        WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(weaponId);
+        if (weapon == null) {
+            sender.sendMessage(mm.deserialize("<red>무기를 찾지 못했습니다: " + weaponId + "</red>"));
+            return true;
+        }
+
+        int slot = parsePositiveInt(args[3]);
+        if (slot < 1 || slot > WeaponSkill.MAX_SLOTS) {
+            sender.sendMessage(mm.deserialize("<red>슬롯 번호는 1~" + WeaponSkill.MAX_SLOTS + " 사이여야 합니다.</red>"));
+            return true;
+        }
+
+        int level = parsePositiveInt(args[4]);
+        if (level < 1) {
+            sender.sendMessage(mm.deserialize("<red>레벨은 1 이상이어야 합니다.</red>"));
+            return true;
+        }
+        SkillSlot skill = weapon.getSkill(slot);
+        if (skill == null) {
+            sender.sendMessage(mm.deserialize("<red>해당 슬롯이 비어 있습니다.</red>"));
+            return true;
+        }
+        int clamped = Math.min(level, skill.getMaxLevel());
+
+        PlayerSkillData data = plugin.getPlayerSkillManager().get(target.getUniqueId());
+        data.setLevel(weaponId, slot, clamped);
+        plugin.getPlayerSkillManager().save(target.getUniqueId());
+
+        sender.sendMessage(mm.deserialize("<green>" + target.getName() + " 의 " + weaponId
+                + " 슬롯 " + slot + " 레벨을 " + clamped + "/" + skill.getMaxLevel() + " 로 설정했습니다.</green>"));
+        return true;
+    }
+
+    private boolean handleCooldown(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("bsrpgskills.admin")) {
+            deny(sender);
+            return true;
+        }
+        // cooldown reset <player> [slot]
+        if (args.length < 3 || !"reset".equals(args[1].toLowerCase(Locale.ROOT))) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills cooldown reset <player> [slot]</red>"));
+            return true;
+        }
+
+        Player target = Bukkit.getPlayerExact(args[2]);
+        if (target == null) {
+            sender.sendMessage(mm.deserialize("<red>온라인 플레이어를 찾지 못했습니다: " + args[2] + "</red>"));
+            return true;
+        }
+
+        if (args.length >= 4) {
+            int slot = parsePositiveInt(args[3]);
+            if (slot < 1 || slot > WeaponSkill.MAX_SLOTS) {
+                sender.sendMessage(mm.deserialize("<red>슬롯 번호는 1~" + WeaponSkill.MAX_SLOTS + " 사이여야 합니다.</red>"));
+                return true;
+            }
+            plugin.getCombatManager().resetCooldown(target, slot);
+            sender.sendMessage(mm.deserialize("<green>" + target.getName() + " 슬롯 " + slot + " 쿨타임 초기화 완료.</green>"));
+        } else {
+            plugin.getCombatManager().resetAllCooldowns(target);
+            sender.sendMessage(mm.deserialize("<green>" + target.getName() + " 모든 쿨타임 초기화 완료.</green>"));
+        }
+        return true;
+    }
+
+    private boolean handleResetItem(CommandSender sender, String[] args) {
+        if (!sender.hasPermission("bsrpgskills.admin")) {
+            deny(sender);
+            return true;
+        }
+        // resetitem give <player> [amount]
+        if (args.length < 3 || !"give".equals(args[1].toLowerCase(Locale.ROOT))) {
+            sender.sendMessage(mm.deserialize("<red>사용법: /bsrpgskills resetitem give <player> [amount]</red>"));
+            return true;
+        }
+
+        Player target = Bukkit.getPlayerExact(args[2]);
+        if (target == null) {
+            sender.sendMessage(mm.deserialize("<red>온라인 플레이어를 찾지 못했습니다: " + args[2] + "</red>"));
+            return true;
+        }
+
+        int amount = 1;
+        if (args.length >= 4) {
+            amount = parsePositiveInt(args[3]);
+            if (amount < 1) {
+                amount = 1;
+            }
+        }
+
+        ItemStack item = plugin.getResetItemManager().build(amount);
+        Map<Integer, ItemStack> leftover = target.getInventory().addItem(item);
+        leftover.values().forEach(rest ->
+                target.getWorld().dropItemNaturally(target.getLocation(), rest));
+
+        sender.sendMessage(mm.deserialize("<green>" + target.getName()
+                + " 에게 스킬 초기화 아이템 " + amount + "개 지급.</green>"));
+        return true;
+    }
+
+    private OfflinePlayer resolvePlayer(String name) {
+        Player online = Bukkit.getPlayerExact(name);
+        if (online != null) {
+            return online;
+        }
+        try {
+            UUID uuid = UUID.fromString(name);
+            return Bukkit.getOfflinePlayer(uuid);
+        } catch (IllegalArgumentException ignored) {
+        }
+        @SuppressWarnings("deprecation")
+        OfflinePlayer offline = Bukkit.getOfflinePlayer(name);
+        return offline.hasPlayedBefore() || offline.isOnline() ? offline : null;
+    }
+
+    private int parsePositiveInt(String input) {
+        try {
+            return Integer.parseInt(input);
+        } catch (NumberFormatException ex) {
+            return -1;
+        }
+    }
+
     private void sendUsage(CommandSender sender, String label) {
         sender.sendMessage(mm.deserialize("<gold>사용 가능한 명령어</gold>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " editor</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " reload</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " list</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " info <weapon></gray>"));
-        sender.sendMessage(mm.deserialize("<gray>/" + label + " toggle</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " save</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " debug</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " debuglog</gray>"));
         sender.sendMessage(mm.deserialize("<gray>/" + label + " validate</gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " point give <player> <amount></gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " point take <player> <amount></gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " point check <player> [weapon]</gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " point reset <player> [weapon] [slot]</gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " setlevel <player> <weapon> <slot> <level></gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " cooldown reset <player> [slot]</gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " resetitem give <player> [amount]</gray>"));
+        sender.sendMessage(mm.deserialize("<gray>/" + label + " skills</gray>"));
     }
 
     private void sendDebugReport(CommandSender viewer, Player target) {
@@ -419,7 +823,7 @@ public class BSRpgSkillsCommand implements CommandExecutor, TabCompleter {
     private List<String> availableSubcommands(CommandSender sender) {
         List<String> available = new ArrayList<>();
         for (String subcommand : SUBCOMMANDS) {
-            if ("toggle".equals(subcommand)) {
+            if ("skills".equals(subcommand)) {
                 if (sender.hasPermission("bsrpgskills.use")) {
                     available.add(subcommand);
                 }

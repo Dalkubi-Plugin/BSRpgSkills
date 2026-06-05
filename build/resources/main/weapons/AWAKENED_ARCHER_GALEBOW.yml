@@ -4,6 +4,7 @@ skills:
   slot-1:
     mythic-id: BLASTING_COMBO
     enabled: true
+    max-level: 1
     timing:
       cooldown: 0.3
     display:
@@ -13,11 +14,12 @@ skills:
       icon: BLAZE_POWDER
       custom-model-data: 0
     modifiers:
-      ratio: 1.3
+      ratio: 1.35
       damage: 1.0
   slot-2:
     mythic-id: EVASIVE_SHOT
     enabled: true
+    max-level: 5
     timing:
       cooldown: 7.0
     display:
@@ -29,9 +31,35 @@ skills:
       ratio: 0.5
       damage: 8.0
       projectile_count: 3.0
+    levels:
+      level-2:
+        cooldown: 6.44
+        damage: 9.6
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 5.95
+        damage: 11.2
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 5.46
+        damage: 13.6
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 5.04
+        damage: 16.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-3:
     mythic-id: VOLLEY_OF_ARROWS
     enabled: true
+    max-level: 5
     timing:
       cooldown: 14.5
     display:
@@ -43,9 +71,35 @@ skills:
       ratio: 1.0
       damage: 8.0
       radius: 3.0
+    levels:
+      level-2:
+        cooldown: 13.34
+        damage: 9.6
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 12.33
+        damage: 11.2
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 11.31
+        damage: 13.6
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 10.44
+        damage: 16.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-4:
     mythic-id: RAPID_ARROWS
     enabled: true
+    max-level: 5
     timing:
       cooldown: 16.0
     display:
@@ -54,13 +108,39 @@ skills:
       icon: BOW
       custom-model-data: 0
     modifiers:
-      ratio: 2.0
+      ratio: 2.5
       damage: 1.0
       rapid_count: 5.0
       finisher_count: 3.0
+    levels:
+      level-2:
+        cooldown: 14.72
+        damage: 1.2
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 13.6
+        damage: 1.4
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 12.48
+        damage: 1.7
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 11.52
+        damage: 2.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-5:
     mythic-id: PIERCING_SKYFALL
     enabled: true
+    max-level: 5
     timing:
       cooldown: 30.0
     display:
@@ -72,9 +152,35 @@ skills:
       ratio: 1.2
       damage: 7.0
       fall_radius: 2.5
+    levels:
+      level-2:
+        cooldown: 27.6
+        damage: 8.4
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 25.5
+        damage: 9.8
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 23.4
+        damage: 11.9
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 21.6
+        damage: 14.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-6:
     mythic-id: SHOT_OF_DESTRUCTION
     enabled: true
+    max-level: 5
     timing:
       cooldown: 42.0
     display:
@@ -83,9 +189,34 @@ skills:
       icon: TNT
       custom-model-data: 0
     modifiers:
-      ratio: 12.0
+      ratio: 10.0
       damage: 10.0
       pierce: 10.0
+    levels:
+      level-2:
+        cooldown: 38.64
+        damage: 12.0
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 35.7
+        damage: 14.0
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 32.76
+        damage: 17.0
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 30.24
+        damage: 20.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
 passives:
   passive-1:
     type: AMBUSH

@@ -8,6 +8,7 @@ import io.lumine.mythic.lib.skill.handler.MythicMobsSkillHandler;
 import io.lumine.mythic.lib.skill.trigger.TriggerMetadata;
 import io.lumine.mythic.lib.skill.trigger.TriggerType;
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
+import kr.yongpyo.bsrpgskills.hook.WorldGuardHook;
 import kr.yongpyo.bsrpgskills.model.CombatState;
 import kr.yongpyo.bsrpgskills.model.PassiveSlot;
 import kr.yongpyo.bsrpgskills.model.PassiveTrigger;
@@ -52,12 +53,16 @@ public class CombatManager {
     private String msgNoSkill;
     private String msgCastFailed;
     private String msgReturnWeapon;
+    private String msgRegionBlocked;
 
     private String sndCombatOn;
     private String sndCombatOff;
     private String sndSkillCast;
     private String sndCooldownDeny;
     private String sndReturnWeapon;
+
+    private String prefixSuccess;
+    private String prefixError;
 
     public CombatManager(BSRpgSkills plugin) {
         this.plugin = plugin;
@@ -75,12 +80,16 @@ public class CombatManager {
         msgNoSkill = config.getString("messages.no-skill", "");
         msgCastFailed = config.getString("messages.cast-failed", "");
         msgReturnWeapon = config.getString("messages.return-weapon", "");
+        msgRegionBlocked = config.getString("messages.region-blocked", "");
 
         sndCombatOn = config.getString("sounds.combat-on", "");
         sndCombatOff = config.getString("sounds.combat-off", "");
         sndSkillCast = config.getString("sounds.skill-cast", "");
         sndCooldownDeny = config.getString("sounds.cooldown-deny", "");
         sndReturnWeapon = config.getString("sounds.return-weapon", "");
+
+        prefixSuccess = config.getString("prefix.success", "");
+        prefixError = config.getString("prefix.error", "");
     }
 
     public void warmUpHandlerCache() {
@@ -134,6 +143,27 @@ public class CombatManager {
         return state != null && state.isCombatMode();
     }
 
+    /**
+     * 플레이어의 모든 무기 쿨타임을 초기화합니다. 상태가 없으면 아무것도 하지 않습니다.
+     */
+    public void resetAllCooldowns(Player player) {
+        CombatState state = states.get(player.getUniqueId());
+        if (state != null) {
+            state.clearAllCooldowns();
+        }
+    }
+
+    /**
+     * 플레이어의 현재 무기 특정 슬롯 쿨타임을 초기화합니다.
+     */
+    public void resetCooldown(Player player, int slot) {
+        CombatState state = states.get(player.getUniqueId());
+        if (state == null) return;
+        String weaponId = state.getCurrentWeaponId();
+        if (weaponId == null) return;
+        state.clearCooldown(weaponId, slot);
+    }
+
     public boolean handleFKey(Player player) {
         CombatState state = getState(player);
 
@@ -160,6 +190,13 @@ public class CombatManager {
 
         WeaponSkill weapon = plugin.getWeaponSkillManager().getWeapon(weaponId);
         if (weapon == null) {
+            return false;
+        }
+
+        // WorldGuard 구역 차단 검사 (플래그 미설치 시 단락되어 호출 안 됨)
+        if (plugin.isWorldGuardEnabled() && !WorldGuardHook.canEnterCombat(player)) {
+            sendMsg(player, msgRegionBlocked);
+            playSound(player, sndCooldownDeny);
             return false;
         }
 
@@ -347,7 +384,8 @@ public class CombatManager {
 
         state.markCast(slotNumber);
 
-        Map<String, Double> modifiers = buildSkillModifiers(player, skill);
+        int level = plugin.getPlayerSkillManager().get(player).getLevel(weaponId, slotNumber);
+        Map<String, Double> modifiers = buildSkillModifiers(player, skill, level);
         boolean castSucceeded = executeCast(player, state, skill.getMythicId(), modifiers);
 
         if (!castSucceeded) {
@@ -355,8 +393,9 @@ public class CombatManager {
             return false;
         }
 
-        if (skill.getCooldown() > 0) {
-            state.setCooldown(weaponId, slotNumber, skill.getCooldown());
+        double cooldown = skill.getCooldownForLevel(level);
+        if (cooldown > 0) {
+            state.setCooldown(weaponId, slotNumber, cooldown);
         }
 
         sendMsg(player, msgSkillCast.replace("{skill}", skill.getDisplayName()));
@@ -384,11 +423,15 @@ public class CombatManager {
         return skill;
     }
 
-    private Map<String, Double> buildSkillModifiers(Player player, SkillSlot skill) {
+    private Map<String, Double> buildSkillModifiers(Player player, SkillSlot skill, int level) {
         Map<String, Double> modifiers = new LinkedHashMap<>();
 
         for (var entry : skill.getModifiers().entrySet()) {
             modifiers.put(entry.getKey(), entry.getValue());
+        }
+
+        if (skill.isLevelable() && level > 1) {
+            modifiers.put("damage", skill.getDamageForLevel(level));
         }
 
         return modifiers;
@@ -456,8 +499,21 @@ public class CombatManager {
 
     private void sendMsg(Player player, String message) {
         if (message != null && !message.isEmpty()) {
-            player.sendMessage(miniMessage.deserialize(message));
+            player.sendMessage(miniMessage.deserialize(resolvePrefixes(message)));
         }
+    }
+
+    /**
+     * 메시지의 {p_success}/{p_error} 토큰을 config에 정의된 prefix 문자열로 치환합니다.
+     * 다른 클래스(명령어/리스너)에서도 동일 스타일을 적용할 때 사용합니다.
+     */
+    public String resolvePrefixes(String message) {
+        if (message == null) {
+            return "";
+        }
+        return message
+                .replace("{p_success}", prefixSuccess)
+                .replace("{p_error}", prefixError);
     }
 
     private void playSound(Player player, String soundKey) {

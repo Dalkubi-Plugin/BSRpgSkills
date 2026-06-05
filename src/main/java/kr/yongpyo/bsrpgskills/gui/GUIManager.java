@@ -3,6 +3,7 @@ package kr.yongpyo.bsrpgskills.gui;
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
 import kr.yongpyo.bsrpgskills.model.PassiveSlot;
 import kr.yongpyo.bsrpgskills.model.PassiveTrigger;
+import kr.yongpyo.bsrpgskills.model.PlayerSkillData;
 import kr.yongpyo.bsrpgskills.model.SkillSlot;
 import kr.yongpyo.bsrpgskills.model.WeaponSkill;
 import net.Indyuce.mmoitems.MMOItems;
@@ -182,7 +183,13 @@ public class GUIManager {
                 "<green>Modifier 추가</green>",
                 List.of("<yellow>클릭 - key:value 입력</yellow>")));
         gui.setItem(36, buildItem(Material.ARROW, "<gray>뒤로</gray>", List.of("<yellow>무기 상세 화면으로 돌아갑니다.</yellow>")));
-        gui.setItem(40, buildItem(Material.EMERALD, "<green>자동 저장</green>", List.of("<gray>변경 즉시 저장됩니다.</gray>")));
+        gui.setItem(42, buildItem(Material.EXPERIENCE_BOTTLE,
+                "<aqua>레벨 편집</aqua>",
+                List.of(
+                        "<gray>최대 레벨: <white>" + skill.getMaxLevel() + "</white></gray>",
+                        "<gray>레벨별 cooldown / damage / lore 조정</gray>",
+                        "<yellow>클릭하여 열기</yellow>"
+                )));
         gui.setItem(44, buildItem(Material.COMPASS,
                 "<gold>표시 규칙</gold>",
                 List.of(
@@ -191,6 +198,205 @@ public class GUIManager {
                 )));
 
         player.openInventory(gui);
+    }
+
+    /**
+     * 플레이어가 자신의 무기 스킬을 강화하는 GUI입니다. 전투 모드에서만 열 수 있습니다.
+     */
+    public void openSkillUpgradeGUI(Player player, WeaponSkill weapon) {
+        SkillUpgradeHolder holder = new SkillUpgradeHolder(weapon.getWeaponId());
+        Inventory gui = Bukkit.createInventory(holder, 36,
+                text("<dark_gray>스킬 강화 - </dark_gray>" + weapon.getDisplayName()));
+        holder.setInventory(gui);
+
+        fillBackground(gui, Material.BLACK_STAINED_GLASS_PANE);
+
+        PlayerSkillData data = plugin.getPlayerSkillManager().get(player);
+
+        gui.setItem(4, buildItem(Material.NETHER_STAR, weapon.getDisplayName(), List.of(
+                "<gray>공용 스킬 포인트: <yellow>" + data.getPoints() + "</yellow></gray>",
+                "<gray>현재 전투 무기 스킬 중 하나를 선택해 강화합니다.</gray>",
+                "<gray>슬롯을 클릭하면 1포인트로 레벨이 상승합니다.</gray>"
+        )));
+
+        // slot-1 (좌클릭, max-level 1)은 강화 불가이므로 제외
+        int[] skillSlots = {11, 12, 13, 14, 15};
+        for (int i = 2; i <= WeaponSkill.MAX_SLOTS; i++) {
+            int guiSlot = skillSlots[i - 2];
+            SkillSlot skill = weapon.getSkill(i);
+            gui.setItem(guiSlot, buildUpgradeIcon(skill, data, weapon.getWeaponId(), i));
+            holder.mapSlot(guiSlot, i);
+        }
+
+        gui.setItem(31, buildItem(Material.BARRIER, "<red>닫기</red>", List.of("<gray>창을 닫습니다.</gray>")));
+        player.openInventory(gui);
+    }
+
+    private ItemStack buildUpgradeIcon(SkillSlot skill, PlayerSkillData data, String weaponId, int slotNumber) {
+        if (skill == null || !skill.isValid()) {
+            return buildItem(Material.GRAY_DYE,
+                    "<dark_gray>슬롯 " + slotNumber + " - 비어있음</dark_gray>",
+                    List.of("<gray>이 슬롯에 활성화된 스킬이 없습니다.</gray>"));
+        }
+
+        int level = data.getLevel(weaponId, slotNumber);
+        int points = data.getPoints();
+        int max = skill.getMaxLevel();
+
+        ItemStack icon = buildIconWithCMD(skill.getIcon(), skill.getCustomModelData());
+        ItemMeta meta = icon.getItemMeta();
+        meta.displayName(text(skill.getDisplayName() + " <gray>[Lv " + level + "/" + max + "]</gray>"));
+
+        List<Component> lore = new ArrayList<>();
+        lore.add(text("<gray>키바인드: <white>" + skill.getKeybindLabel() + "</white></gray>"));
+        lore.add(text("<gray>데미지: <white>" + format(skill.getDamageForLevel(level))
+                + "</white> <gray>| 쿨다운: <white>" + format(skill.getCooldownForLevel(level)) + "초</white></gray>"));
+        lore.add(text("<gray>공용 스킬 포인트: <yellow>" + points + "</yellow></gray>"));
+
+        for (String line : skill.getDescriptionLinesForLevel(level)) {
+            if (line == null || line.isBlank()) {
+                continue;
+            }
+            lore.add(text(line));
+        }
+
+        if (!skill.isLevelable()) {
+            lore.add(Component.empty());
+            lore.add(text("<dark_red>이 스킬은 강화할 수 없습니다.</dark_red>"));
+        } else if (level >= max) {
+            lore.add(Component.empty());
+            lore.add(text("<gold>이미 최대 레벨입니다.</gold>"));
+        } else {
+            lore.add(Component.empty());
+            lore.add(text("<aqua>다음 레벨 (" + (level + 1) + "):</aqua>"));
+            lore.add(text("<gray> - 데미지 <white>" + format(skill.getDamageForLevel(level + 1)) + "</white></gray>"));
+            double nextCd = skill.getCooldownForLevel(level + 1);
+            double baseCd = skill.getCooldown();
+            if (Double.compare(nextCd, baseCd) != 0) {
+                lore.add(text("<gray> - 쿨다운 <white>" + format(nextCd) + "초</white></gray>"));
+            }
+            for (String line : skill.getResolvedLoreForSingleLevel(level + 1)) {
+                lore.add(text("<gray> - " + line + "</gray>"));
+            }
+            lore.add(Component.empty());
+            if (points >= 1) {
+                lore.add(text("<green>클릭하여 강화 (1pt)</green>"));
+            } else {
+                lore.add(text("<red>포인트가 부족합니다.</red>"));
+            }
+        }
+
+        meta.lore(lore);
+        icon.setItemMeta(meta);
+        return icon;
+    }
+
+    private String format(double value) {
+        if (value == (long) value) {
+            return String.valueOf((long) value);
+        }
+        return String.format("%.2f", value);
+    }
+
+    /**
+     * 관리자가 특정 스킬의 레벨별 cooldown / damage / lore 를 편집하는 GUI입니다.
+     */
+    public void openSkillLevelsEditGUI(Player player, WeaponSkill weapon, int slotNumber) {
+        SkillSlot skill = weapon.getSkill(slotNumber);
+        if (skill == null) {
+            return;
+        }
+
+        SkillLevelsEditHolder holder = new SkillLevelsEditHolder(weapon.getWeaponId(), slotNumber);
+        Inventory gui = Bukkit.createInventory(holder, 54,
+                text("<dark_gray>레벨 편집 - 슬롯 " + slotNumber + "</dark_gray>"));
+        holder.setInventory(gui);
+
+        fillBackground(gui, Material.BLACK_STAINED_GLASS_PANE);
+
+        gui.setItem(4, buildItem(Material.NETHER_STAR,
+                skill.getDisplayName(),
+                List.of(
+                        "<gray>Mythic ID: <white>" + skill.getMythicId() + "</white></gray>",
+                        "<gray>슬롯: <white>" + slotNumber + " (" + skill.getKeybindLabel() + ")</white></gray>"
+                )));
+
+        gui.setItem(11, buildItem(Material.EXPERIENCE_BOTTLE,
+                "<gold>최대 레벨: " + skill.getMaxLevel() + "</gold>",
+                List.of(
+                        "<gray>좌/우 클릭으로 1단계 증감</gray>",
+                        skill.getMaxLevel() == 1 ? "<dark_red>강화 불가 (max-level = 1)</dark_red>"
+                                : "<green>강화 가능 (level 2 ~ " + skill.getMaxLevel() + ")</green>"
+                )));
+        gui.setItem(13, buildItem(Material.RED_CONCRETE, "<red>최대 레벨 -1</red>",
+                List.of("<gray>현재 max-level을 1 줄입니다.</gray>")));
+        gui.setItem(15, buildItem(Material.LIME_CONCRETE, "<green>최대 레벨 +1</green>",
+                List.of("<gray>현재 max-level을 1 늘립니다 (상한 10).</gray>")));
+
+        int[] rowStarts = {18, 27, 36, 45};
+        for (int i = 0; i < rowStarts.length; i++) {
+            int level = i + 2;
+            int start = rowStarts[i];
+            boolean active = level <= skill.getMaxLevel();
+            SkillSlot.LevelOverride override = skill.getLevels().get(level);
+
+            Double cdValue = override != null ? override.getCooldown() : null;
+            Double dmgValue = override != null ? override.getDamage() : null;
+            List<String> loreList = override != null ? override.getLore() : List.of();
+
+            String levelTitle = active ? "<aqua>Lv " + level + "</aqua>" : "<dark_gray>Lv " + level + " (비활성)</dark_gray>";
+            gui.setItem(start, buildItem(active ? Material.GLOWSTONE_DUST : Material.GUNPOWDER,
+                    levelTitle,
+                    List.of(
+                            "<gray>cooldown: <white>" + formatNullable(cdValue) + "</white></gray>",
+                            "<gray>damage: <white>" + formatNullable(dmgValue) + "</white></gray>",
+                            "<gray>lore 줄 수: <white>" + loreList.size() + "</white></gray>"
+                    )));
+
+            gui.setItem(start + 2, buildItem(Material.CLOCK,
+                    "<white>cooldown: " + formatNullable(cdValue) + "</white>",
+                    List.of(
+                            "<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>",
+                            "<yellow>휠클릭 +0.01</yellow>",
+                            "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>",
+                            "<yellow>Drop (Q) 키로 초기화 (base 사용)</yellow>"
+                    )));
+
+            gui.setItem(start + 4, buildItem(Material.IRON_SWORD,
+                    "<white>damage: " + formatNullable(dmgValue) + "</white>",
+                    List.of(
+                            "<yellow>좌클릭 +0.1 / 우클릭 -0.1</yellow>",
+                            "<yellow>휠클릭 +0.01</yellow>",
+                            "<yellow>Shift 좌클릭 +1.0 / Shift 우클릭 -1.0</yellow>",
+                            "<yellow>Drop (Q) 키로 초기화 (base 사용)</yellow>"
+                    )));
+
+            List<String> lorePreview = new ArrayList<>();
+            lorePreview.add("<yellow>좌클릭 - 채팅으로 lore 입력</yellow>");
+            lorePreview.add("<yellow>여러 줄은 \"|\" 로 구분</yellow>");
+            lorePreview.add("<yellow>우클릭 - lore 전체 삭제</yellow>");
+            if (!loreList.isEmpty()) {
+                lorePreview.add("<gray>현재 lore:</gray>");
+                for (String line : loreList) {
+                    lorePreview.add("<gray> - " + emptyFallback(line) + "</gray>");
+                }
+            }
+            gui.setItem(start + 6, buildItem(Material.WRITABLE_BOOK,
+                    "<white>lore (" + loreList.size() + " 줄)</white>",
+                    lorePreview));
+        }
+
+        gui.setItem(53, buildItem(Material.ARROW, "<gray>뒤로</gray>",
+                List.of("<yellow>스킬 편집 화면으로 돌아갑니다.</yellow>")));
+
+        player.openInventory(gui);
+    }
+
+    private String formatNullable(Double value) {
+        if (value == null) {
+            return "(base)";
+        }
+        return format(value);
     }
 
     public void openPassiveEditGUI(Player player, WeaponSkill weapon, int passiveIndex) {
@@ -253,7 +459,6 @@ public class GUIManager {
         }
 
         gui.setItem(36, buildItem(Material.ARROW, "<gray>뒤로</gray>", List.of("<yellow>무기 상세 화면으로 돌아갑니다.</yellow>")));
-        gui.setItem(40, buildItem(Material.EMERALD, "<green>자동 저장</green>", List.of("<gray>변경 즉시 저장됩니다.</gray>")));
         gui.setItem(44, buildItem(Material.COMPASS,
                 "<gold>Modifier 안내</gold>",
                 List.of("<gray>패시브 modifier는 아래줄에서 바로 조절합니다.</gray>")));
@@ -472,6 +677,65 @@ public class GUIManager {
 
         public String getModifierKey(int guiSlot) {
             return modifierMap.get(guiSlot);
+        }
+    }
+
+    public static class SkillLevelsEditHolder implements InventoryHolder {
+        private Inventory inventory;
+        private final String weaponId;
+        private final int slotNumber;
+
+        public SkillLevelsEditHolder(String weaponId, int slotNumber) {
+            this.weaponId = weaponId;
+            this.slotNumber = slotNumber;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+
+        public void setInventory(Inventory inventory) {
+            this.inventory = inventory;
+        }
+
+        public String getWeaponId() {
+            return weaponId;
+        }
+
+        public int getSlotNumber() {
+            return slotNumber;
+        }
+    }
+
+    public static class SkillUpgradeHolder implements InventoryHolder {
+        private Inventory inventory;
+        private final String weaponId;
+        private final Map<Integer, Integer> slotMap = new HashMap<>();
+
+        public SkillUpgradeHolder(String weaponId) {
+            this.weaponId = weaponId;
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+
+        public void setInventory(Inventory inventory) {
+            this.inventory = inventory;
+        }
+
+        public String getWeaponId() {
+            return weaponId;
+        }
+
+        public void mapSlot(int guiSlot, int skillSlot) {
+            slotMap.put(guiSlot, skillSlot);
+        }
+
+        public Integer getSkillSlot(int guiSlot) {
+            return slotMap.get(guiSlot);
         }
     }
 

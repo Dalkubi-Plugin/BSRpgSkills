@@ -26,6 +26,7 @@ public class BSRpgSkillsExpansion extends PlaceholderExpansion {
                 case "combat_mode" -> "false";
                 case "weapon_name", "weapon_id" -> "";
                 case "active_count" -> "0";
+                case "points" -> String.valueOf(plugin.getPlayerSkillManager().get(player).getPoints());
                 default -> {
                     if (params.startsWith("slot_")) yield handleSlot(player, null, params);
                     yield null;
@@ -38,6 +39,7 @@ public class BSRpgSkillsExpansion extends PlaceholderExpansion {
             case "weapon_name" -> { var w = combat.getCurrentWeapon(player); yield w != null ? w.getDisplayName() : ""; }
             case "weapon_id" -> state.getCurrentWeaponId() != null ? state.getCurrentWeaponId() : "";
             case "active_count" -> { var w = combat.getCurrentWeapon(player); yield w != null ? String.valueOf(w.getActiveSkillCount()) : "0"; }
+            case "points" -> String.valueOf(plugin.getPlayerSkillManager().get(player).getPoints());
             default -> {
                 if (params.startsWith("slot_")) yield handleSlot(player, state, params);
                 yield null;
@@ -69,6 +71,9 @@ public class BSRpgSkillsExpansion extends PlaceholderExpansion {
             case "damage" -> String.valueOf(s.getDamage());
             case "enabled" -> String.valueOf(s.isEnabled());
             case "keybind" -> s.getKeybindLabel();
+            case "level" -> String.valueOf(plugin.getPlayerSkillManager().get(player).getLevel(w.getWeaponId(), slot));
+            case "maxlevel" -> String.valueOf(s.getMaxLevel());
+            case "points" -> String.valueOf(plugin.getPlayerSkillManager().get(player).getPoints());
             default -> "";
         };
     }

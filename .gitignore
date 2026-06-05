@@ -1,7 +1,9 @@
-﻿# Build outputs
+# Build outputs
 /build/
 /out/
 /target/
+/bin/
+dependency-reduced-pom.xml
 
 # Gradle
 .gradle/
@@ -9,19 +11,38 @@
 /.gradle-home/
 !gradle/wrapper/gradle-wrapper.jar
 
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
 # Java crash logs
 hs_err_pid*
 replay_pid*
 
-# IDE
+# IDE - IntelliJ
 /.idea/
 *.iml
 *.ipr
 *.iws
+
+# IDE - Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+
+# IDE - NetBeans
+/nbproject/
+nbactions.xml
+
+# IDE - VS Code
 /.vscode/
 
 # OS files
 .DS_Store
+.AppleDouble
+.LSOverride
 Thumbs.db
 desktop.ini
 
@@ -29,6 +50,26 @@ desktop.ini
 /logs/
 *.log
 /run/
+/server/
+/test-server/
 
+# Minecraft server runtime artifacts
+eula.txt
+server.properties
+*.jar.bak
+world/
+world_nether/
+world_the_end/
+crash-reports/
+banned-*.json
+ops.json
+whitelist.json
+usercache.json
+
+# Secrets / local env
+*.env
+.env
+secrets.yml
+
+# Claude
 .claude
-build/

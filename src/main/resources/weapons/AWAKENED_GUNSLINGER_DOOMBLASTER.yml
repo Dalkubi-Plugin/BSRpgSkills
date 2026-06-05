@@ -1,0 +1,231 @@
+mmo-type: SWORD
+display-name: <gradient:#750000:#ffd06c:#750000>둠블래스터</gradient>
+skills:
+  slot-1:
+    mythic-id: PIERCING_COMBO
+    enabled: true
+    max-level: 1
+    timing:
+      cooldown: 0.3
+    display:
+      name: <gradient:#750000:#ffd06c:#750000>관통 연사</gradient>
+      description: 총탄을 연속으로 발사해 적을 관통하고 점화시킵니다.
+      icon: ARROW
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 4.0
+      burnduration: 4.0
+      burndamage: 1.0
+  slot-2:
+    mythic-id: HELLFLARE_BURST
+    enabled: true
+    max-level: 5
+    timing:
+      cooldown: 3.0
+    display:
+      name: <gradient:#750000:#ffd06c:#750000>지옥불 폭발</gradient>
+      description: 지옥불 탄환을 발사해 강력한 광역 화염 피해를 가합니다.
+      icon: FIRE_CHARGE
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 6.0
+      burnduration: 4.0
+      burndamage: 1.0
+    levels:
+      level-2:
+        cooldown: 2.76
+        damage: 7.2
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 2.55
+        damage: 8.4
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 2.34
+        damage: 10.2
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 2.16
+        damage: 12.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
+  slot-3:
+    mythic-id: DEATHMARK
+    enabled: true
+    max-level: 5
+    timing:
+      cooldown: 3.0
+    display:
+      name: <gradient:#750000:#ffd06c:#750000>죽음의 표식</gradient>
+      description: 표적에게 죽음의 낙인을 새겨 강력한 정밀 사격을 가합니다.
+      icon: TARGET
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 6.0
+    levels:
+      level-2:
+        cooldown: 2.76
+        damage: 7.2
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 2.55
+        damage: 8.4
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 2.34
+        damage: 10.2
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 2.16
+        damage: 12.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
+  slot-4:
+    mythic-id: OVERHEAT
+    enabled: true
+    max-level: 5
+    timing:
+      cooldown: 11.0
+    display:
+      name: <gradient:#750000:#ffd06c:#750000>과열</gradient>
+      description: 총열을 과열시켜 일정 시간 화력을 폭발적으로 끌어올립니다.
+      icon: BLAZE_ROD
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      duration: 10.0
+    levels:
+      level-2:
+        cooldown: 10.12
+        display:
+          lore:
+          - <gray>강화 I ▶ 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 9.35
+        display:
+          lore:
+          - <gray>강화 II ▶ 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 8.58
+        display:
+          lore:
+          - <gray>강화 III ▶ 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 7.92
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 쿨 {cooldown}초</gold>
+  slot-5:
+    mythic-id: SKYFALL_BARRAGE
+    enabled: true
+    max-level: 5
+    timing:
+      cooldown: 4.0
+    display:
+      name: <gradient:#750000:#ffd06c:#750000>천공 폭격</gradient>
+      description: 하늘에서 탄막을 쏟아부어 광역 점화 피해를 가합니다.
+      icon: TNT
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 6.0
+      burnduration: 4.0
+      burndamage: 1.0
+    levels:
+      level-2:
+        cooldown: 3.68
+        damage: 7.2
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 3.4
+        damage: 8.4
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 3.12
+        damage: 10.2
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 2.88
+        damage: 12.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
+  slot-6:
+    mythic-id: VERMILION_EXECUTION
+    enabled: true
+    max-level: 5
+    timing:
+      cooldown: 10.0
+    display:
+      name: <gradient:#750000:#ffd06c:#750000>주홍의 처형</gradient>
+      description: 주홍빛 처형탄을 발사해 적을 단숨에 무력화시키는 궁극기.
+      icon: SPECTRAL_ARROW
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 12.0
+      bulletdamage: 4.0
+      burnduration: 7.0
+      burndamage: 1.0
+    levels:
+      level-2:
+        cooldown: 9.2
+        damage: 14.4
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 8.5
+        damage: 16.8
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 7.8
+        damage: 20.4
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 7.2
+        damage: 24.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
+passives:
+  passive-1:
+    type: MARKMANS_CREED
+    trigger: TIMER
+    enabled: true
+    timing:
+      interval: 10.0
+      cooldown: 0.0
+    display:
+      name: <gradient:#750000:#ffd06c:#750000>저격수의 신조</gradient>
+      description: 주기적으로 사격 자세를 가다듬어 명중률과 위력을 강화합니다.
+      icon: SPYGLASS
+      custom-model-data: 0
+    modifiers: {}

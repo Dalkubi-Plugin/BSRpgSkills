@@ -5,19 +5,31 @@ import io.lumine.mythic.lib.api.event.PlayerClickEvent;
 import io.lumine.mythic.lib.damage.AttackMetadata;
 import io.lumine.mythic.lib.damage.DamageType;
 import kr.yongpyo.bsrpgskills.BSRpgSkills;
+import kr.yongpyo.bsrpgskills.hook.WorldGuardHook;
 import kr.yongpyo.bsrpgskills.manager.CombatManager;
+import kr.yongpyo.bsrpgskills.manager.PlayerSkillManager;
+import kr.yongpyo.bsrpgskills.manager.ResetItemManager;
 import kr.yongpyo.bsrpgskills.model.CombatState;
 import kr.yongpyo.bsrpgskills.model.PassiveTrigger;
+import kr.yongpyo.bsrpgskills.model.PlayerSkillData;
+import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerSwapHandItemsEvent;
+import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.UUID;
 
@@ -32,9 +44,76 @@ import java.util.UUID;
 public class CombatListener implements Listener {
 
     private final CombatManager combat;
+    private final PlayerSkillManager playerSkills;
+    private final ResetItemManager resetItem;
+    private final boolean worldGuardEnabled;
+    private final MiniMessage mm = MiniMessage.miniMessage();
 
     public CombatListener(BSRpgSkills plugin) {
         this.combat = plugin.getCombatManager();
+        this.playerSkills = plugin.getPlayerSkillManager();
+        this.resetItem = plugin.getResetItemManager();
+        this.worldGuardEnabled = plugin.isWorldGuardEnabled();
+    }
+
+    /**
+     * 전투 모드 중 bsrpgskills-combat 플래그가 deny인 구역으로 진입하면 전투 모드를 해제합니다.
+     * 블록 좌표가 바뀐 이동에서만 검사하여 부하를 최소화합니다.
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onMove(PlayerMoveEvent event) {
+        if (!worldGuardEnabled) {
+            return;
+        }
+        var to = event.getTo();
+        var from = event.getFrom();
+        if (to.getBlockX() == from.getBlockX()
+                && to.getBlockY() == from.getBlockY()
+                && to.getBlockZ() == from.getBlockZ()) {
+            return;
+        }
+
+        Player player = event.getPlayer();
+        if (!combat.isInCombatMode(player)) {
+            return;
+        }
+        if (!WorldGuardHook.canEnterCombat(player)) {
+            combat.disableCombatMode(player, combat.getState(player));
+        }
+    }
+
+    /**
+     * 스킬 초기화 아이템을 우클릭하면 모든 스킬 레벨을 초기화하고 포인트를 환불합니다.
+     */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onResetItemUse(PlayerInteractEvent event) {
+        if (event.getHand() != EquipmentSlot.HAND) {
+            return;
+        }
+        Action action = event.getAction();
+        if (action != Action.RIGHT_CLICK_AIR && action != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
+
+        ItemStack item = event.getItem();
+        if (!resetItem.isResetItem(item)) {
+            return;
+        }
+
+        event.setCancelled(true);
+        Player player = event.getPlayer();
+
+        PlayerSkillData data = playerSkills.get(player);
+        int refunded = data.resetAll();
+        playerSkills.save(player.getUniqueId());
+
+        if (resetItem.isConsume()) {
+            item.setAmount(item.getAmount() - 1);
+        }
+
+        player.sendMessage(mm.deserialize(combat.resolvePrefixes(
+                "{p_success}<#4caf50>모든 스킬 레벨을 초기화하고 포인트 " + refunded + " 을 환불했습니다.</#4caf50>")));
+        player.playSound(player.getLocation(), Sound.BLOCK_ENCHANTMENT_TABLE_USE, 1.0f, 1.2f);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -152,10 +231,16 @@ public class CombatListener implements Listener {
     }
 
     @EventHandler
+    public void onJoin(PlayerJoinEvent event) {
+        playerSkills.load(event.getPlayer().getUniqueId());
+    }
+
+    @EventHandler
     public void onQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
         combat.forceDisable(event.getPlayer());
         combat.removeState(uuid);
+        playerSkills.unload(uuid);
     }
 
     /**

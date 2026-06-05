@@ -29,7 +29,9 @@ public class WeaponSkillManager {
             "AWAKENED_MAGE_RUNESTAFF.yml",
             "AWAKENED_SHAMAN_LIFESCEPTER.yml",
             "AWAKENED_MARTIAL_ARTIST_TIGERFIST.yml",
-            "AWAKENED_WARRIOR_BRUTESWORD.yml"
+            "AWAKENED_WARRIOR_BRUTESWORD.yml",
+            "AWAKENED_DRAGON_WARRIOR_DRAGONLANCE.yml",
+            "AWAKENED_GUNSLINGER_DOOMBLASTER.yml"
     };
 
     private final BSRpgSkills plugin;
@@ -115,7 +117,9 @@ public class WeaponSkillManager {
             skill.setCustomModelData(readInt(section, "display.custom-model-data", "custom-model-data", 0));
             skill.setDescription(readString(section, "display.description", "description", ""));
             skill.setEnabled(readBoolean(section, "enabled", false));
+            skill.setMaxLevel(section.getInt("max-level", 1));
             skill.clearModifiers();
+            skill.clearLevels();
 
             ConfigurationSection modifiers = section.getConfigurationSection("modifiers");
             if (modifiers != null) {
@@ -138,6 +142,45 @@ public class WeaponSkillManager {
                     skill.putExtra(key, extra.get(key));
                 }
             }
+
+            if (skill.isLevelable()) {
+                ConfigurationSection levels = section.getConfigurationSection("levels");
+                if (levels != null) {
+                    for (String key : levels.getKeys(false)) {
+                        int level = parseLevelKey(key);
+                        if (level < 2 || level > skill.getMaxLevel()) {
+                            continue;
+                        }
+                        ConfigurationSection levelSection = levels.getConfigurationSection(key);
+                        if (levelSection == null) {
+                            continue;
+                        }
+                        Double levelCooldown = levelSection.contains("cooldown")
+                                ? levelSection.getDouble("cooldown") : null;
+                        Double levelDamage = levelSection.contains("damage")
+                                ? levelSection.getDouble("damage") : null;
+                        java.util.List<String> levelLore = levelSection.contains("display.lore")
+                                ? levelSection.getStringList("display.lore")
+                                : java.util.List.of();
+                        if (levelCooldown == null && levelDamage == null && levelLore.isEmpty()) {
+                            continue;
+                        }
+                        skill.putLevel(level, new SkillSlot.LevelOverride(levelCooldown, levelDamage, levelLore));
+                    }
+                }
+            }
+        }
+    }
+
+    private int parseLevelKey(String key) {
+        if (key == null) {
+            return -1;
+        }
+        String trimmed = key.startsWith("level-") ? key.substring("level-".length()) : key;
+        try {
+            return Integer.parseInt(trimmed);
+        } catch (NumberFormatException ex) {
+            return -1;
         }
     }
 
@@ -232,6 +275,7 @@ public class WeaponSkillManager {
 
             config.set(path + ".mythic-id", skill.getMythicId());
             config.set(path + ".enabled", skill.isEnabled());
+            config.set(path + ".max-level", skill.getMaxLevel());
             config.set(path + ".timing.cooldown", skill.getCooldown());
             config.set(path + ".display.name", skill.getDisplayName());
             config.set(path + ".display.description", skill.getDescription());
@@ -243,6 +287,25 @@ public class WeaponSkillManager {
                 modifierValues.put(entry.getKey(), entry.getValue());
             }
             config.set(path + ".modifiers", modifierValues);
+
+            if (skill.isLevelable() && !skill.getLevels().isEmpty()) {
+                for (var entry : skill.getLevels().entrySet()) {
+                    SkillSlot.LevelOverride override = entry.getValue();
+                    if (override == null || override.isEmpty()) {
+                        continue;
+                    }
+                    String levelPath = path + ".levels.level-" + entry.getKey();
+                    if (override.getCooldown() != null) {
+                        config.set(levelPath + ".cooldown", override.getCooldown());
+                    }
+                    if (override.getDamage() != null) {
+                        config.set(levelPath + ".damage", override.getDamage());
+                    }
+                    if (!override.getLore().isEmpty()) {
+                        config.set(levelPath + ".display.lore", override.getLore());
+                    }
+                }
+            }
         }
 
         int passiveIndex = 0;

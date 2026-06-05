@@ -4,6 +4,7 @@ skills:
   slot-1:
     mythic-id: LETHAL_COMBO
     enabled: true
+    max-level: 1
     timing:
       cooldown: 0.5
     display:
@@ -17,6 +18,7 @@ skills:
   slot-2:
     mythic-id: RAVAGING_DASH
     enabled: true
+    max-level: 5
     timing:
       cooldown: 13.0
     display:
@@ -27,9 +29,35 @@ skills:
     modifiers:
       ratio: 0.25
       damage: 7.0
+    levels:
+      level-2:
+        cooldown: 11.96
+        damage: 8.4
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 11.05
+        damage: 9.8
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 10.14
+        damage: 11.9
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 9.36
+        damage: 14.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-3:
     mythic-id: CRIMSON_ARC
     enabled: true
+    max-level: 5
     timing:
       cooldown: 15.0
     display:
@@ -40,9 +68,35 @@ skills:
     modifiers:
       ratio: 1.25
       damage: 2.0
+    levels:
+      level-2:
+        cooldown: 13.8
+        damage: 2.4
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 12.75
+        damage: 2.8
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 11.7
+        damage: 3.4
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 10.8
+        damage: 4.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-4:
     mythic-id: SHADOWQUAKE
     enabled: true
+    max-level: 5
     timing:
       cooldown: 15.0
     display:
@@ -54,9 +108,35 @@ skills:
       ratio: 2.0
       duration: 5.0
       damage: 5.0
+    levels:
+      level-2:
+        cooldown: 13.8
+        damage: 6.0
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 12.75
+        damage: 7.0
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 11.7
+        damage: 8.5
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 10.8
+        damage: 10.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-5:
     mythic-id: DEATH_BLOOM
     enabled: true
+    max-level: 5
     timing:
       cooldown: 30.0
     display:
@@ -67,9 +147,35 @@ skills:
     modifiers:
       ratio: 4.0
       damage: 2.0
+    levels:
+      level-2:
+        cooldown: 27.6
+        damage: 2.4
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 25.5
+        damage: 2.8
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 23.4
+        damage: 3.4
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 21.6
+        damage: 4.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-6:
     mythic-id: LAST_DANCE
     enabled: true
+    max-level: 5
     timing:
       cooldown: 55.0
     display:
@@ -81,6 +187,31 @@ skills:
       ratio: 0.8
       damage: 1.0
       laistratio: 13.0
+    levels:
+      level-2:
+        cooldown: 50.6
+        damage: 1.2
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 46.75
+        damage: 1.4
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 42.9
+        damage: 1.7
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 39.6
+        damage: 2.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
 passives:
   passive-1:
     type: DEADLY_CALM

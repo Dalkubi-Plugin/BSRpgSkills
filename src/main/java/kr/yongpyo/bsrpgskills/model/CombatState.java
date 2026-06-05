@@ -90,6 +90,13 @@ public class CombatState {
         cooldownsByWeapon.clear();
     }
 
+    public void clearCooldown(String weaponId, int slot) {
+        Map<Integer, Long> cooldowns = cooldownsByWeapon.get(weaponId);
+        if (cooldowns != null) {
+            cooldowns.remove(slot);
+        }
+    }
+
     /**
      * 현재 남아 있는 쿨타임만 디버그/표시용으로 복사해 반환합니다.
      * 이미 끝난 쿨타임은 제외해 실제로 의미 있는 값만 보이게 합니다.

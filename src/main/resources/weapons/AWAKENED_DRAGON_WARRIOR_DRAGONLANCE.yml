@@ -1,229 +1,238 @@
 mmo-type: SWORD
-display-name: <gradient:#6a0000:#ff0202:#6a0000>황혼의 칼날</gradient>
+display-name: <gradient:#f153ff:#4e00ca:#f153ff>드래곤랜스</gradient>
 skills:
   slot-1:
-    mythic-id: LETHAL_COMBO
+    mythic-id: DRAGON_COMBO
     enabled: true
     max-level: 1
     timing:
-      cooldown: 0.5
+      cooldown: 0.2
     display:
-      name: <gradient:#6a0000:#ff0202>치명적인 연격</gradient>
-      description: 이동 방향으로 파고들며 난무를 펼칩니다. 4타 시전 시 공중으로 도약하여 지면을 내리찍어 거대한 충격파를 일으킵니다.
+      name: <gradient:#f153ff:#4e00ca:#f153ff>용염 연격</gradient>
+      description: 용의 기운을 담아 연속 베기를 가하고 화염 피해를 추가로 입힙니다.
       icon: BLAZE_POWDER
       custom-model-data: 0
     modifiers:
-      ratio: 1.35
+      ratio: 1.0
       damage: 4.0
+      burnduration: 3.0
+      burndamage: 1.0
   slot-2:
-    mythic-id: RAVAGING_DASH
+    mythic-id: DRAGONFANG_THRUST
     enabled: true
     max-level: 5
     timing:
-      cooldown: 13.0
+      cooldown: 1.0
     display:
-      name: <gradient:#6a0000:#ff0202>유린의 돌진</gradient>
-      description: 후방으로 짧게 물러난 뒤 순식간에 전방으로 돌진하며 경로상의 적들을 베어 넘깁니다.
-      icon: SPECTRAL_ARROW
+      name: <gradient:#f153ff:#4e00ca:#f153ff>용아 찌르기</gradient>
+      description: 용의 송곳니로 적을 꿰뚫고 점화시킵니다.
+      icon: NETHERITE_SWORD
       custom-model-data: 0
     modifiers:
-      ratio: 0.25
-      damage: 7.0
-    levels:
-      level-2:
-        cooldown: 11.96
-        damage: 8.4
-        display:
-          lore:
-          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
-      level-3:
-        cooldown: 11.05
-        damage: 9.8
-        display:
-          lore:
-          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
-      level-4:
-        cooldown: 10.14
-        damage: 11.9
-        display:
-          lore:
-          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
-      level-5:
-        cooldown: 9.36
-        damage: 14.0
-        display:
-          lore:
-          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
-  slot-3:
-    mythic-id: CRIMSON_ARC
-    enabled: true
-    max-level: 5
-    timing:
-      cooldown: 15.0
-    display:
-      name: <gradient:#6a0000:#ff0202>진홍빛 궤적</gradient>
-      description: 칼날에 마력을 집중해 붉은 검기를 발산하여 일직선상의 모든 적을 꿰뚫습니다.
-      icon: TNT
-      custom-model-data: 0
-    modifiers:
-      ratio: 1.25
+      ratio: 1.0
       damage: 2.0
+      burnduration: 3.0
+      burndamage: 1.0
     levels:
       level-2:
-        cooldown: 13.8
+        cooldown: 0.92
         damage: 2.4
         display:
           lore:
           - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-3:
-        cooldown: 12.75
+        cooldown: 0.85
         damage: 2.8
         display:
           lore:
           - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-4:
-        cooldown: 11.7
+        cooldown: 0.78
         damage: 3.4
         display:
           lore:
           - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-5:
-        cooldown: 10.8
+        cooldown: 0.72
         damage: 4.0
         display:
           lore:
           - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
-  slot-4:
-    mythic-id: SHADOWQUAKE
+  slot-3:
+    mythic-id: DRACONIC_SPIRAL
     enabled: true
     max-level: 5
     timing:
-      cooldown: 15.0
+      cooldown: 3.0
     display:
-      name: <gradient:#6a0000:#ff0202>그림자 진동</gradient>
-      description: 순식간에 5회의 연속 베기를 가한 후, 대지를 울리는 강력한 일격으로 적을 관통합니다.
-      icon: BOW
+      name: <gradient:#f153ff:#4e00ca:#f153ff>용 나선격</gradient>
+      description: 회전하며 주변 적에게 화염 피해를 가하는 광역 공격.
+      icon: FIRE_CHARGE
       custom-model-data: 0
     modifiers:
-      ratio: 2.0
-      duration: 5.0
+      ratio: 1.0
       damage: 5.0
+      burnduration: 4.0
+      burndamage: 1.0
     levels:
       level-2:
-        cooldown: 13.8
+        cooldown: 2.76
         damage: 6.0
         display:
           lore:
           - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-3:
-        cooldown: 12.75
+        cooldown: 2.55
         damage: 7.0
         display:
           lore:
           - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-4:
-        cooldown: 11.7
+        cooldown: 2.34
         damage: 8.5
         display:
           lore:
           - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-5:
-        cooldown: 10.8
+        cooldown: 2.16
         damage: 10.0
         display:
           lore:
           - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
-  slot-5:
-    mythic-id: DEATH_BLOOM
+  slot-4:
+    mythic-id: SKY_PIERCER
     enabled: true
     max-level: 5
     timing:
-      cooldown: 30.0
+      cooldown: 4.0
     display:
-      name: <gradient:#6a0000:#ff0202>죽음의 꽃</gradient>
-      description: 주변 모든 방향으로 단검을 뿌려 적을 밀어내고 광범위한 피해를 입힙니다.
-      icon: ARROW
+      name: <gradient:#f153ff:#4e00ca:#f153ff>천공 관통</gradient>
+      description: 하늘에서 용의 일격을 내리꽂아 강력한 화염 피해를 가합니다.
+      icon: TRIDENT
       custom-model-data: 0
     modifiers:
-      ratio: 4.0
-      damage: 2.0
+      ratio: 1.0
+      damage: 7.0
+      burnduration: 5.0
+      burndamage: 1.0
     levels:
       level-2:
-        cooldown: 27.6
-        damage: 2.4
+        cooldown: 3.68
+        damage: 8.4
         display:
           lore:
           - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-3:
-        cooldown: 25.5
-        damage: 2.8
+        cooldown: 3.4
+        damage: 9.8
         display:
           lore:
           - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-4:
-        cooldown: 23.4
-        damage: 3.4
+        cooldown: 3.12
+        damage: 11.9
         display:
           lore:
           - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-5:
-        cooldown: 21.6
-        damage: 4.0
+        cooldown: 2.88
+        damage: 14.0
+        display:
+          lore:
+          - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
+  slot-5:
+    mythic-id: DRAGONS_ROAR
+    enabled: true
+    max-level: 5
+    timing:
+      cooldown: 4.0
+    display:
+      name: <gradient:#f153ff:#4e00ca:#f153ff>용의 포효</gradient>
+      description: 압도적인 포효로 주변 적을 뒤로 밀어내고 점화시킵니다.
+      icon: DRAGON_HEAD
+      custom-model-data: 0
+    modifiers:
+      ratio: 1.0
+      damage: 4.0
+      burnduration: 4.0
+      burndamage: 1.0
+    levels:
+      level-2:
+        cooldown: 3.68
+        damage: 4.8
+        display:
+          lore:
+          - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-3:
+        cooldown: 3.4
+        damage: 5.6
+        display:
+          lore:
+          - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-4:
+        cooldown: 3.12
+        damage: 6.8
+        display:
+          lore:
+          - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
+      level-5:
+        cooldown: 2.88
+        damage: 8.0
         display:
           lore:
           - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
   slot-6:
-    mythic-id: LAST_DANCE
+    mythic-id: DRAGONS_WRATH
     enabled: true
     max-level: 5
     timing:
-      cooldown: 55.0
+      cooldown: 10.0
     display:
-      name: <gradient:#6a0000:#ff0202>최후의 무도</gradient>
-      description: 하늘 높이 도약한 뒤 지상의 목표를 향해 수직으로 낙하하며 치명적인 일격을 가합니다.
-      icon: TRIDENT
+      name: <gradient:#f153ff:#4e00ca:#f153ff>용의 분노</gradient>
+      description: 용의 진노를 폭발시켜 적을 단번에 분쇄하는 강력한 일격.
+      icon: DRAGON_EGG
       custom-model-data: 0
     modifiers:
-      ratio: 0.8
-      damage: 1.0
-      laistratio: 13.0
+      ratio: 1.0
+      damage: 5.0
+      burnduration: 6.0
+      burndamage: 1.0
     levels:
       level-2:
-        cooldown: 50.6
-        damage: 1.2
+        cooldown: 9.2
+        damage: 6.0
         display:
           lore:
           - <gray>강화 I ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-3:
-        cooldown: 46.75
-        damage: 1.4
+        cooldown: 8.5
+        damage: 7.0
         display:
           lore:
           - <gray>강화 II ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-4:
-        cooldown: 42.9
-        damage: 1.7
+        cooldown: 7.8
+        damage: 8.5
         display:
           lore:
           - <gray>강화 III ▶ 데미지 {damage} | 쿨 {cooldown}초</gray>
       level-5:
-        cooldown: 39.6
-        damage: 2.0
+        cooldown: 7.2
+        damage: 10.0
         display:
           lore:
           - <gold>최대 강화 ▶ 데미지 {damage} | 쿨 {cooldown}초</gold>
 passives:
   passive-1:
-    type: DEADLY_CALM
+    type: DRAGONFLAME
     trigger: TIMER
     enabled: true
     timing:
-      interval: 0.1
+      interval: 10.0
       cooldown: 0.0
     display:
-      name: <gradient:#6a0000:#ff0202>매복의 일격</gradient>
-      description: 은밀하게 접근하여 가하는 첫 공격이 대상에게 치명적인 추가 피해를 입힙니다. (10초마다 발동)
-      icon: ENDER_EYE
+      name: <gradient:#f153ff:#4e00ca:#f153ff>용염 발산</gradient>
+      description: 주기적으로 용의 불꽃을 방출해 주변 적을 점화시킵니다.
+      icon: BLAZE_POWDER
       custom-model-data: 0
-    modifiers:
-      damage: 1.5
+    modifiers: {}
