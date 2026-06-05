@@ -85,7 +85,7 @@ public class CombatListener implements Listener {
     /**
      * 스킬 초기화 아이템을 우클릭하면 모든 스킬 레벨을 초기화하고 포인트를 환불합니다.
      */
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     public void onResetItemUse(PlayerInteractEvent event) {
         if (event.getHand() != EquipmentSlot.HAND) {
             return;
@@ -102,6 +102,11 @@ public class CombatListener implements Listener {
 
         event.setCancelled(true);
         Player player = event.getPlayer();
+
+        // WorldGuard 차단 구역에서는 스킬 초기화 아이템도 사용할 수 없습니다.
+        if (combat.isRegionBlocked(player)) {
+            return;
+        }
 
         PlayerSkillData data = playerSkills.get(player);
         int refunded = data.resetAll();

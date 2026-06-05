@@ -182,6 +182,20 @@ public class CombatManager {
         return true;
     }
 
+    /**
+     * WorldGuard 차단 구역 여부를 검사합니다.
+     * 차단된 경우 안내 메시지/사운드를 출력하고 true를 반환합니다.
+     * 플래그 미설치 시 항상 false (단락되어 WorldGuardHook가 로드되지 않음).
+     */
+    public boolean isRegionBlocked(Player player) {
+        if (plugin.isWorldGuardEnabled() && !WorldGuardHook.canEnterCombat(player)) {
+            sendMsg(player, msgRegionBlocked);
+            playSound(player, sndCooldownDeny);
+            return true;
+        }
+        return false;
+    }
+
     private boolean tryEnableCombat(Player player, CombatState state) {
         String weaponId = detectWeaponId(player);
         if (weaponId == null || !plugin.getWeaponSkillManager().hasWeapon(weaponId)) {
@@ -194,9 +208,7 @@ public class CombatManager {
         }
 
         // WorldGuard 구역 차단 검사 (플래그 미설치 시 단락되어 호출 안 됨)
-        if (plugin.isWorldGuardEnabled() && !WorldGuardHook.canEnterCombat(player)) {
-            sendMsg(player, msgRegionBlocked);
-            playSound(player, sndCooldownDeny);
+        if (isRegionBlocked(player)) {
             return false;
         }
 
